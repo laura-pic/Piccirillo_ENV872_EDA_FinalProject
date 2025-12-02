@@ -1,8 +1,10 @@
 ---
 title: "Piccirillo_data_exploration"
-author: "lfp"
+author: "Laura Piccirillo"
 date: "2025-12-01"
 output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -10,18 +12,53 @@ output: pdf_document
 #install.packages("tidyverse")
 #install.packages("here")
 #install.packages("ggplot2")
+#install.packages("lubridate")
 library(tidyverse)
 library(here)
 library(ggplot2)
+library(lubridate)
 
 # Set your working directory
+setwd("~/ENV 872/Final Project/Piccirillo_ENV872_EDA_FinalProject")
 getwd()
 here()
 
 # Set your ggplot theme
-
+mytheme <- theme_bw() + theme(axis.text = element_text(color = "black"),
+                              legend.position = "top",
+                              legend.text = element_text(color = "black"))
+theme_set(mytheme)
 
 # Load your datasets
+selenium_conc <- read.csv(here(
+  "Final Project/Piccirillo_ENV872_EDA_FinalProject/Data/Raw/As_Se_IO_BOTTLE.csv"), 
+                          stringsAsFactors = T)
+oxygen <- read.csv(
+  here(
+  "Final Project/Piccirillo_ENV872_EDA_FinalProject/Data/Raw/GT-C_SBE_CTD_Proc_v30Oct2014.csv"),
+  stringsAsFactors = T)
+```
 
+
+```{r, investigate datasets}
+dim(selenium_conc)
+dim(oxygen)
+glimpse(selenium_conc)
+glimpse(oxygen)
+class(selenium_conc$Se_TD_CONC_BOTTLE)
+class(selenium_conc$Se_IV_D_CONC_BOTTLE)
+```
+
+
+```{r}
+ggplot(selenium_conc, aes(Se_IV_D_CONC_BOTTLE, depth)) + geom_point()
+```
+
+
+
+```{r, look at locations of casts}
+#convert data file into shapefile for spatial exploration
+gage_sf <- gage_locations %>%
+  st_as_sf(coords = c('dec_long_va','dec_lat_va'), crs=4269)
 ```
 
