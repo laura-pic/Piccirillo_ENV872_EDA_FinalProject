@@ -47,6 +47,9 @@ glimpse(selenium_conc)
 glimpse(oxygen)
 class(selenium_conc$Se_TD_CONC_BOTTLE)
 class(selenium_conc$Se_IV_D_CONC_BOTTLE)
+class(selenium_conc$depth)
+
+
 ```
 
 
