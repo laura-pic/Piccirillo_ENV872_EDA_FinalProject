@@ -82,9 +82,6 @@ summary(selenium_conc$Se_IV_D_CONC_BOTTLE)
 summary(selenium_conc$Se_VI_D)
 summary(selenium_conc$Org_Se_II_CONC_BOTTLE)
 
-# remove outliers
-
-
 # change date column to date object
 selenium_conc$PI_DATE <- ymd(selenium_conc$PI_DATE)
 
@@ -105,29 +102,50 @@ oxygen$DATE <- ymd(oxygen$DATE)
 
 # look at distribution of oxygen values
 summary(oxygen$Sbeox0)
-# will remove oxygen values below 0 in data processing step
 
 ```
 
 
-```{r}
+```{r, plotting selenium dataset for exploration}
 # visualizing continuous variables of concentrations and depth
-ggplot(selenium_conc, aes(Se_IV_D_CONC_BOTTLE, depth)) + geom_point() +
-  scale_y_reverse() + labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)") + 
-  theme(axis.text.x = element_text(angle = 90)) + geom_smooth()
+seIV_plot <- ggplot(selenium_conc, aes(Se_IV_D_CONC_BOTTLE, depth)) + geom_point() +
+  scale_y_reverse(limits = c(6000, 0)) + 
+  labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)") + 
+  geom_smooth(method = lm, se = F)
 
-ggplot(selenium_conc, aes(Se_VI_D, depth)) + geom_violin() +
-  scale_y_reverse() + labs(y = "Depth (m)", x = "SeVI Concentration (nm/L)") + 
-  theme(axis.text.x = element_text(angle = 90))
+# remove outliers row 344
+selenium_conc$Se_IV_D_CONC_BOTTLE[344] <- NA
 
-ggplot(selenium_conc, aes(Org_Se_II_CONC_BOTTLE, depth)) + geom_boxplot() +
-  scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)")
+# retry plot after outlier set to NA
+seIV_plot_again <- ggplot(selenium_conc, aes(Se_IV_D_CONC_BOTTLE, depth)) + geom_point() +
+  scale_y_reverse(limits = c(6000, 0)) + 
+  labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)") + 
+  geom_smooth(method = lm, se = F)
+
+seVI_plot <- ggplot(selenium_conc, aes(Se_VI_D, depth)) + geom_point() + 
+  labs(y = "Depth (m)", x = "SeVI Concentration (nm/L)") +
+  geom_smooth(method = lm, se = F) +
+  scale_y_reverse(limits = c(6000, 0))
+
+org_Se_plot <- ggplot(selenium_conc, aes(Org_Se_II_CONC_BOTTLE, depth)) + 
+  geom_point() +
+  scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)") + 
+  geom_smooth(method = lm, se = F)
+
+# remove zeroes? data can never truly be 0
 
 # comparing frequency of continuous variables (concentrations) 
 ggplot(selenium_conc) + geom_freqpoly(aes(x = Se_IV_D_CONC_BOTTLE)) + 
   geom_freqpoly(aes(x = Se_VI_D), color = "blue")
 
 ```
+
+```{r, plotting oxygen dataset for exploration}
+
+ggplot(oxygen, aes(Sbeox0, DepSM)) + geom_point()
+
+```
+
 
 ```{r}
 write.csv()
