@@ -62,17 +62,33 @@ nrow(selenium_conc)
 selenium_conc$Se_IV_D_CONC_BOTTLE <- as.numeric(as.character(
   selenium_conc$Se_IV_D_CONC_BOTTLE))
 
+selenium_conc$Se_VI_D <- na_if(
+  selenium_conc$Se_VI_D, "nd")
+sum(is.na(selenium_conc$Se_VI_D))
+selenium_conc$Se_VI_D <- as.numeric(as.character(
+  selenium_conc$Se_VI_D))
 
-#left off here - change nd values for other species
+selenium_conc$Org_Se_II_CONC_BOTTLE <- na_if(
+  selenium_conc$Org_Se_II_CONC_BOTTLE, "nd")
+sum(is.na(selenium_conc$Org_Se_II_CONC_BOTTLE))
+selenium_conc$Org_Se_II_CONC_BOTTLE <- as.numeric(as.character(
+  selenium_conc$Org_Se_II_CONC_BOTTLE))
 
-drop_na(selenium_conc$Se_IV_D_CONC_BOTTLE)
-
+# recheck class of selenium species has been changed to numeric
+class(selenium_conc$Se_IV_D_CONC_BOTTLE)
+class(selenium_conc$Se_VI_D)
+class(selenium_conc$Org_Se_II_CONC_BOTTLE)
 
 # look at distribution of values for total Se and each species
-summary(selenium_conc$Se_TD_CONC_BOTTLE)
 summary(selenium_conc$Se_IV_D_CONC_BOTTLE)
 summary(selenium_conc$Se_VI_D)
 summary(selenium_conc$Org_Se_II_CONC_BOTTLE)
+
+# drop NA's?
+drop_na(selenium_conc$Se_IV_D_CONC_BOTTLE)
+
+# remove outliers
+
 
 # check class of oxygen values
 class(oxygen$Sbeox0)
