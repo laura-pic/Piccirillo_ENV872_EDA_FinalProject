@@ -31,24 +31,36 @@ theme_set(mytheme)
 
 # Load your datasets
 selenium_conc <- read.csv(here(
-  "Final Project/Piccirillo_ENV872_EDA_FinalProject/Data/Raw/As_Se_IO_BOTTLE.csv"), 
+  "Data/Raw/As_Se_IO_BOTTLE.csv"), 
                           stringsAsFactors = T)
 oxygen <- read.csv(
   here(
-  "Final Project/Piccirillo_ENV872_EDA_FinalProject/Data/Raw/GT-C_SBE_CTD_Proc_v30Oct2014.csv"),
+  "Data/Raw/GT-C_SBE_CTD_Proc_v30Oct2014.csv"),
   stringsAsFactors = T)
 ```
 
 
 ```{r, investigate datasets}
+# explore datasets
 dim(selenium_conc)
 dim(oxygen)
+
 glimpse(selenium_conc)
 glimpse(oxygen)
+
+# check class of selenium concentrations for each species
 class(selenium_conc$Se_TD_CONC_BOTTLE)
 class(selenium_conc$Se_IV_D_CONC_BOTTLE)
+class(selenium_conc$Se_VI_D)
+class(selenium_conc$Org_Se_II_CONC_BOTTLE)
 class(selenium_conc$depth)
+# will change the class of the 3 species in data processing step once NA's are removed
 
+# look at distribution of values for total Se and each species
+summary(selenium_conc$Se_TD_CONC_BOTTLE)
+summary(selenium_conc$Se_IV_D_CONC_BOTTLE)
+summary(selenium_conc$Se_VI_D)
+summary(selenium_conc$Org_Se_II_CONC_BOTTLE)
 
 ```
 
