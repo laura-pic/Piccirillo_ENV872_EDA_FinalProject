@@ -7,28 +7,51 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 # uploading datasets and selecting columns of interest
-selenium_conc_clean <- 
+selenium_clean <- 
   
   
 oxygen_clean <- 
   
 ```
 
-remove NA's
 change date column
 
 
 ```{r}
 # Rewriting NA values as "NA"
+
 sum(is.na(selenium_conc$Se_IV_D_CONC_BOTTLE))
 
 # dropping NA values 
+USGS.flow.data.complete <- na.omit(USGS.flow.data)
+
+ %>%
+  filter(!is.na(temperature_C) & !is.na(tn_ug) & !is.na(tp_ug))
+
 drop_na(selenium_conc$Se_IV_D_CONC_BOTTLE)
 
 
+# rename columns of interest
+colnames(USGS.flow.data) <- c("agency_cd", "site_no", "datetime", 
+                              "discharge.max", "discharge.max.approval", 
+                              "discharge.min", "discharge.min.approval", 
+                              "discharge.mean", "discharge.mean.approval", 
+                              "gage.height.max", "gage.height.max.approval", 
+                              "gage.height.min", "gage.height.min.approval", 
+                              "gage.height.mean", "gage.height.mean.approval")
+
+```
+
+```{r}
+# remove oxygen values below 0
 
 
-drop_na()
+# choose locations of interest
+
+
+# filter depths of interest for oxygen data 
+NTL.phys.data.JunethruOctober1 <- filter(NTL.phys.data, daynum > 151 & daynum < 305)
+
 ```
 
 
@@ -37,7 +60,7 @@ drop_na()
 all_clean <- 
   
 ```
-
+combine datasets by something.. maybe lat/long? depth?
 
 
 ```{r}
