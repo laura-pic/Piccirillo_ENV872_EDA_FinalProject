@@ -37,16 +37,14 @@ oxygen <- read.csv(
   here(
   "Data/Raw/GT-C_SBE_CTD_Proc_v30Oct2014.csv"),
   stringsAsFactors = T)
+
 ```
 
 
-```{r, investigate datasets}
-# explore datasets
+```{r, investigate selenium dataset}
+# explore dataset
 dim(selenium_conc)
-dim(oxygen)
-
 glimpse(selenium_conc)
-glimpse(oxygen)
 
 # check class of selenium concentrations for each species and depth
 class(selenium_conc$Se_IV_D_CONC_BOTTLE)
@@ -84,23 +82,36 @@ summary(selenium_conc$Se_IV_D_CONC_BOTTLE)
 summary(selenium_conc$Se_VI_D)
 summary(selenium_conc$Org_Se_II_CONC_BOTTLE)
 
-# drop NA's?
-drop_na(selenium_conc$Se_IV_D_CONC_BOTTLE)
-
 # remove outliers
 
+
+# change date column to date object
+selenium_conc$PI_DATE <- ymd(selenium_conc$PI_DATE)
+
+```
+
+
+```{r, investigate oxygen dataset}
+# explore dataset
+dim(oxygen)
+glimpse(oxygen)
 
 # check class of oxygen values
 class(oxygen$Sbeox0)
 class(oxygen$DepSM)
 
+# change date column to date object
+oxygen$DATE <- ymd(oxygen$DATE)
+
 # look at distribution of oxygen values
 summary(oxygen$Sbeox0)
 # will remove oxygen values below 0 in data processing step
+
 ```
 
 
 ```{r}
+# visualizing continuous variables of concentrations and depth
 ggplot(selenium_conc, aes(Se_IV_D_CONC_BOTTLE, depth)) + geom_point() +
   scale_y_reverse() + labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)") + 
   theme(axis.text.x = element_text(angle = 90)) + geom_smooth()
@@ -112,8 +123,15 @@ ggplot(selenium_conc, aes(Se_VI_D, depth)) + geom_violin() +
 ggplot(selenium_conc, aes(Org_Se_II_CONC_BOTTLE, depth)) + geom_boxplot() +
   scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)")
 
+# comparing frequency of continuous variables (concentrations) 
+ggplot(selenium_conc) + geom_freqpoly(aes(x = Se_IV_D_CONC_BOTTLE)) + 
+  geom_freqpoly(aes(x = Se_VI_D), color = "blue")
+
 ```
 
+```{r}
+write.csv()
+```
 
 
 ```{r, look at locations of casts}
