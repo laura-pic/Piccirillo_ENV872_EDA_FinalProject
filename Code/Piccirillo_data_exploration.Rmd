@@ -48,13 +48,25 @@ dim(oxygen)
 glimpse(selenium_conc)
 glimpse(oxygen)
 
-# check class of selenium concentrations for each species
-class(selenium_conc$Se_TD_CONC_BOTTLE)
+# check class of selenium concentrations for each species and depth
 class(selenium_conc$Se_IV_D_CONC_BOTTLE)
 class(selenium_conc$Se_VI_D)
 class(selenium_conc$Org_Se_II_CONC_BOTTLE)
 class(selenium_conc$depth)
-# will change the class of the 3 species in data processing step once NA's are removed
+
+# changing missing values indicated by "nd" to NAs
+selenium_conc$Se_IV_D_CONC_BOTTLE <- na_if(
+  selenium_conc$Se_IV_D_CONC_BOTTLE, "nd")
+sum(is.na(selenium_conc$Se_IV_D_CONC_BOTTLE))
+nrow(selenium_conc)
+selenium_conc$Se_IV_D_CONC_BOTTLE <- as.numeric(as.character(
+  selenium_conc$Se_IV_D_CONC_BOTTLE))
+
+
+#left off here - change nd values for other species
+
+drop_na(selenium_conc$Se_IV_D_CONC_BOTTLE)
+
 
 # look at distribution of values for total Se and each species
 summary(selenium_conc$Se_TD_CONC_BOTTLE)
@@ -62,11 +74,28 @@ summary(selenium_conc$Se_IV_D_CONC_BOTTLE)
 summary(selenium_conc$Se_VI_D)
 summary(selenium_conc$Org_Se_II_CONC_BOTTLE)
 
+# check class of oxygen values
+class(oxygen$Sbeox0)
+class(oxygen$DepSM)
+
+# look at distribution of oxygen values
+summary(oxygen$Sbeox0)
+# will remove oxygen values below 0 in data processing step
 ```
 
 
 ```{r}
-ggplot(selenium_conc, aes(Se_IV_D_CONC_BOTTLE, depth)) + geom_point()
+ggplot(selenium_conc, aes(Se_IV_D_CONC_BOTTLE, depth)) + geom_point() +
+  scale_y_reverse() + labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)") + 
+  theme(axis.text.x = element_text(angle = 90)) + geom_smooth()
+
+ggplot(selenium_conc, aes(Se_VI_D, depth)) + geom_violin() +
+  scale_y_reverse() + labs(y = "Depth (m)", x = "SeVI Concentration (nm/L)") + 
+  theme(axis.text.x = element_text(angle = 90))
+
+ggplot(selenium_conc, aes(Org_Se_II_CONC_BOTTLE, depth)) + geom_boxplot() +
+  scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)")
+
 ```
 
 
