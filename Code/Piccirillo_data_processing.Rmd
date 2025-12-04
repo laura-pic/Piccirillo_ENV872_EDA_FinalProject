@@ -4,32 +4,80 @@ author: "lfp"
 date: "2025-12-01"
 output: pdf_document
 ---
-
 ```{r setup, include=FALSE}
-# uploading datasets and selecting columns of interest
-selenium_clean <- 
+# Install and load packages
+#install.packages("tidyverse")
+#install.packages("here")
+#install.packages("ggplot2")
+#install.packages("lubridate")
+#install.packages("sf")
+#install.packages("mapview")
+#install.packages("leaflet")
+library(tidyverse)
+library(here)
+library(ggplot2)
+library(lubridate)
+library(sf)
+library(mapview)
+library(leaflet)
+
+# Set your working directory
+setwd("~/ENV 872/Final Project/Piccirillo_ENV872_EDA_FinalProject")
+getwd()
+here()
+
+# Set your ggplot theme
+mytheme <- theme_bw() + theme(axis.text = element_text(color = "black"),
+                              legend.position = "top",
+                              legend.text = element_text(color = "black"))
+theme_set(mytheme)
+```
+
+
+```{r selenium dataset processing}
+# uploading selenium dataset and selecting columns of interest
+selenium_clean <- read.csv(here("Data/Processed/As_Se_IO_BOTTLE_Explored.csv"),
+                           stringsAsFactors = T)
   
-  
-oxygen_clean <- 
+selenium_clean <- selenium_clean %>%
+  select(EVENT_LAT, EVENT_LON, PI_DATE, depth, 
+         Se_IV_D_CONC_BOTTLE:Org_Se_II_CONC_BOTTLE)
+
+# change date to date object
+selenium_clean$PI_DATE <- ymd(selenium_clean$PI_DATE)
+
+# removing rows with NAs for all 3 Se species ONLY
+sum(is.na(selenium_clean$Org_Se_II_CONC_BOTTLE))
+sum(is.na(selenium_clean$Se_VI_D))
+sum(is.na(selenium_clean$Se_IV_D_CONC_BOTTLE))
+
+selenium_clean2 <- selenium_clean %>%
+  filter(
+    !is.na(Se_IV_D_CONC_BOTTLE) | !is.na(Se_VI_D) | 
+      !is.na(Org_Se_II_CONC_BOTTLE))
   
 ```
 
-change date column
+
+```{r oxygen dataset processing}
+# uploading oxygen data and selecting columns of interest
+oxygen_clean <- read.csv(here(
+  "Data/Processed/GT-C_SBE_CTD_Proc_v30Oct2014_Explored.csv"),
+  stringsAsFactors = T)
+
+oxygen_clean <- oxygen_clean %>%
+  select(DATE, LATITUDE, LONGITUDE, DepSM, Sbeox0)
+
+# choose locations of interest
+
+
+# filter depths of interest for oxygen data 
+NTL.phys.data.JunethruOctober1 <- filter(NTL.phys.data, daynum > 151 & daynum < 305)
+
+```
 
 
 ```{r}
-# Rewriting NA values as "NA"
-
-sum(is.na(selenium_conc$Se_IV_D_CONC_BOTTLE))
-
-# dropping NA values 
-USGS.flow.data.complete <- na.omit(USGS.flow.data)
-
- %>%
-  filter(!is.na(temperature_C) & !is.na(tn_ug) & !is.na(tp_ug))
-
-drop_na(selenium_conc$Se_IV_D_CONC_BOTTLE)
-
 
 # rename columns of interest
 colnames(USGS.flow.data) <- c("agency_cd", "site_no", "datetime", 
@@ -43,14 +91,16 @@ colnames(USGS.flow.data) <- c("agency_cd", "site_no", "datetime",
 ```
 
 ```{r}
-# remove oxygen values below 0
 
 
-# choose locations of interest
+```
 
+```{r, look at locations of casts for oxygen}
+# convert data file into shapefile for spatial exploration - oxygen only
+oxygen_sf <- oxygen_above_0 %>%
+  st_as_sf(coords = c('LONGITUDE','LATITUDE'), crs=4269)
 
-# filter depths of interest for oxygen data 
-NTL.phys.data.JunethruOctober1 <- filter(NTL.phys.data, daynum > 151 & daynum < 305)
+mapview(oxygen_sf)
 
 ```
 
