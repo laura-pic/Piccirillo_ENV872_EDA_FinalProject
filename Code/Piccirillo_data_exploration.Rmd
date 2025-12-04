@@ -139,12 +139,14 @@ org_Se_plot <- ggplot(selenium_conc, aes(Org_Se_II_CONC_BOTTLE, depth)) +
   scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)") + 
   geom_smooth(method = lm, se = F)
 
-
 # comparing frequency of continuous variables (concentrations) 
-ggplot(selenium_conc) + geom_freqpoly(aes(x = Se_IV_D_CONC_BOTTLE)) + 
-  geom_freqpoly(aes(x = Se_VI_D), color = "blue") + 
-  geom_freqpoly(aes(x = Org_Se_II_CONC_BOTTLE), color = "green")
-
+ggplot(selenium_conc) + geom_density(aes(x = Se_IV_D_CONC_BOTTLE)) + 
+  geom_density(aes(x = Se_VI_D), color = "blue") + 
+  geom_density(aes(x = Org_Se_II_CONC_BOTTLE), color = "orange") + 
+  labs(x = "Concentration (nm/L)", y = "Count") + 
+  geom_text(x = 0.45, y = 2.25, label = "Organic Se 2-", color = "orange", size = 5) + 
+  geom_text(x = 0.5, y = 1.35, label = "SeIV", size = 5) +
+  geom_text(x = 1.25, y = 0.85, label = "SeVI", color = "blue", size = 5)
 ```
 
 ```{r, plotting oxygen dataset for exploration}
