@@ -150,8 +150,16 @@ ggplot(selenium_conc) + geom_density(aes(x = Se_IV_D_CONC_BOTTLE)) +
 ```
 
 ```{r, plotting oxygen dataset for exploration}
+# plotting oxygen data with depth
+ggplot(oxygen, aes(Sbeox0, DepSM)) + geom_point(alpha = 0.5) + 
+  scale_y_reverse() + labs(x = "Dissolved oxygen (umol/kg)", y = "Depth (m)")
 
-ggplot(oxygen, aes(Sbeox0, DepSM)) + geom_point()
+# removing negative dissolved oxygen values as instrumental error because DO cannot be negative
+oxygen_above_0 <- oxygen %>%
+  filter(Sbeox0 >= 0)
+  
+ggplot(oxygen_above_0, aes(Sbeox0, DepSM)) + geom_point(alpha = 0.5) + 
+  scale_y_reverse() + labs(x = "Dissolved oxygen (umol/kg)", y = "Depth (m)")
 
 ```
 
