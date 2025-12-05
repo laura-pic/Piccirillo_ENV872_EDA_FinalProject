@@ -32,14 +32,73 @@ mytheme <- theme_bw() + theme(axis.text = element_text(color = "black"),
                               legend.position = "top",
                               legend.text = element_text(color = "black"))
 theme_set(mytheme)
+
 ```
+
 
 ```{r}
 # uploading dataset
 all_data <- read.csv(here("Data/Processed/se_oxygen_processed.csv"),
                      stringsAsFactors = T)
 
+# single linear regression model of selenite compared to depth
+selenite_lm <- lm(data = all_data, 
+                  Se_IV_D_CONC_BOTTLE ~ depth)
+summary(selenite_lm)
 
+# checking fit of the model
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(selenite_lm)
+par(mfrow = c(1,1))
+
+# plotting the linear regression
+ggplot(all_data, aes(Se_IV_D_CONC_BOTTLE, depth)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  scale_y_reverse() +
+  labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)") + 
+  geom_smooth(method = lm, se = F)
+
+# single linear regression model of SELENATE compared to depth
+selenate_lm <- lm(data = all_data, 
+                  Se_VI_D ~ depth)
+summary(selenate_lm)
+
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(selenate_lm)
+par(mfrow = c(1,1))
+
+ggplot(all_data, aes(Se_VI_D, depth)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  scale_y_reverse(limits = c(6000, 0)) +
+  labs(y = "Depth (m)", x = "SeVI Concentration (nm/L)") + 
+  geom_smooth(method = lm, se = F)
+
+
+# single linear regression model of organic selenide compared to depth
+selenide_lm <- lm(data = all_data, 
+                  Org_Se_II_CONC_BOTTLE ~ depth)
+summary(selenide_lm)
+
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(selenide_lm)
+par(mfrow = c(1,1))
+
+ggplot(all_data, aes(Org_Se_II_CONC_BOTTLE, depth)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)") + 
+  geom_smooth(method = lm, se = F)
 
 ```
+
+
+```{r}
+# pivot longer dataset to plot all Se species together with depth
+all_data_gathered <- pivot_longer(all_data, 
+                                  Se_IV_D_CONC_BOTTLE:Org_Se_II_CONC_BOTTLE, 
+               names_to = "species", values_to = "concentration")
+
+ggplot(all_data_gathered, aes(concentration, depth, colour = species)) + 
+  geom_point() + scale_y_reverse() + geom_smooth()
+```
+
 
