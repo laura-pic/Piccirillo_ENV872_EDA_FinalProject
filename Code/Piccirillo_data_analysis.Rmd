@@ -5,26 +5,41 @@ date: "2025-12-01"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+# Install and load packages
+#install.packages("tidyverse")
+#install.packages("here")
+#install.packages("ggplot2")
+#install.packages("lubridate")
+#install.packages("sf")
+#install.packages("mapview")
+#install.packages("leaflet")
+library(tidyverse)
+library(here)
+library(ggplot2)
+library(lubridate)
+library(sf)
+library(mapview)
+library(leaflet)
+
+# Set your working directory
+setwd("~/ENV 872/Final Project/Piccirillo_ENV872_EDA_FinalProject")
+getwd()
+here()
+
+# Set your ggplot theme
+mytheme <- theme_bw() + theme(axis.text = element_text(color = "black"),
+                              legend.position = "top",
+                              legend.text = element_text(color = "black"))
+theme_set(mytheme)
 ```
 
-## R Markdown
+```{r}
+# uploading dataset
+all_data <- read.csv(here("Data/Processed/se_oxygen_processed.csv"),
+                     stringsAsFactors = T)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
