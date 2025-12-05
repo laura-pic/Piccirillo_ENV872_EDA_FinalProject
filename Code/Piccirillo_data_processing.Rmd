@@ -86,9 +86,9 @@ oxygen_clean2$LONGITUDE <- round(oxygen_clean2$LONGITUDE, digits = 4)
 oxygen_location1 <- oxygen_clean2 %>%
   filter(LATITUDE == -12.0057 & LONGITUDE == -79.1952)
 
-#long of -77.818 vs -77.8181 assumed to be the same here
+#long of -77.8180 vs -77.8181 assumed to be the same here
 oxygen_location2 <- oxygen_clean2 %>%
-  filter(LATITUDE == -12.0448 & LONGITUDE == -77.818)
+  filter(LATITUDE == -12.0448 & LONGITUDE == -77.8180)
 
 # checking oxygen depth profiles to confirm locations are in OMZ
 ggplot(oxygen_location1, aes(Sbeox0, DepSM)) + geom_point() + 
@@ -109,17 +109,18 @@ mapview(oxygen_location_all_sf)
 
 
 ```{r}
-#combining datasets
+# changing decimal places in depth for Se data
 selenium_clean2$depth <- round(selenium_clean2$depth, digits = 0)
 
+# merge not successful because of decimal places. Changing Se data for only one long to be 3 decimal places so merge with oxygen works.
+selenium_clean2$EVENT_LON[51:62] <- -77.818
+
+# combining datasets
 all_clean <- left_join(
   selenium_clean2, oxygen_location_all, 
   join_by(EVENT_LAT == LATITUDE, EVENT_LON == LONGITUDE, depth == DepSM))
 
-
-
 ```
-combine datasets by something.. maybe lat/long? depth?
 
 
 ```{r}
