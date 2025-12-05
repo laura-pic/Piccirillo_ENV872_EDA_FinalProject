@@ -111,8 +111,10 @@ mapview(oxygen_location_all_sf)
 
 ```{r}
 #combining datasets
-all_clean <- 
-  
+all_clean <- left_join(
+  selenium_clean2, oxygen_location_all, 
+  join_by(EVENT_LAT == LATITUDE, EVENT_LON == LONGITUDE))
+# this didn't work because none of the lat/long matched from the oxygen dataset
 ```
 combine datasets by something.. maybe lat/long? depth?
 
