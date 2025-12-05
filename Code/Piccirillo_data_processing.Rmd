@@ -125,6 +125,7 @@ all_clean <- left_join(
 
 ```{r}
 # saving processed and combined dataset
-write.csv()
+write.csv(all_clean, row.names = F, 
+          "./Data/Processed/se_oxygen_processed.csv")
 ```
 
