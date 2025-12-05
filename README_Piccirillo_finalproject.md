@@ -12,7 +12,7 @@ This project was carried out in December 2025.
 
 ## Investigators
 
-Laura Piccirillo, PhD Student at Duke University, [laura.piccirillo\@duke.edu](mailto:laura.piccirillo@duke.edu){.email}\
+Laura Piccirillo, PhD Student at Duke University, [laura.piccirillo\@duke.edu](mailto:laura.piccirillo@duke.edu)
 
 ## Keywords
 
