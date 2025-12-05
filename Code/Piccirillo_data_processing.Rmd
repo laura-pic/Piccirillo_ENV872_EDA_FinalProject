@@ -78,27 +78,26 @@ ggplot(oxygen_clean2, aes(Sbeox0, DepSM)) + geom_point() + scale_y_reverse()
 
 
 ```{r, look at locations of casts for oxygen}
-# choose locations of interest - picked points with nearly complete depth profiles of oxygen and filtered them by lat/long - picked ones closest to Peruvian coast as this is where OMZ is
+# rounding lat/long in oxygen data to 4 decimals to match selenium data lat/long structure
+oxygen_clean2$LATITUDE <- round(oxygen_clean2$LATITUDE, digits = 4)
+oxygen_clean2$LONGITUDE <- round(oxygen_clean2$LONGITUDE, digits = 4)
+
+# choose locations of interest - picked points with nearly complete depth profiles of oxygen and filtered them by lat/long - picked ones closest to Peruvian coast as this is where OMZ is - only 2 really met requirements
 oxygen_location1 <- oxygen_clean2 %>%
-  filter(LATITUDE == -12.00517 & LONGITUDE == -79.19517)
+  filter(LATITUDE == -12.0057 & LONGITUDE == -79.1952)
 
+#long of -77.818 vs -77.8181 assumed to be the same here
 oxygen_location2 <- oxygen_clean2 %>%
-  filter(LATITUDE == -12.04483 & LONGITUDE == -77.818)
-
-oxygen_location3 <- oxygen_clean2 %>%
-  filter(LATITUDE == -11.99983 & LONGITUDE == -81.50017)
+  filter(LATITUDE == -12.0448 & LONGITUDE == -77.818)
 
 # checking oxygen depth profiles to confirm locations are in OMZ
 ggplot(oxygen_location1, aes(Sbeox0, DepSM)) + geom_point() + 
   scale_y_reverse() + labs(x = "Dissolved Oxygen (umol/kg)", y = "Depth (m)")
 ggplot(oxygen_location2, aes(Sbeox0, DepSM)) + geom_point() + 
   scale_y_reverse() + labs(x = "Dissolved Oxygen (umol/kg)", y = "Depth (m)")
-ggplot(oxygen_location3, aes(Sbeox0, DepSM)) + geom_point() + 
-  scale_y_reverse() + labs(x = "Dissolved Oxygen (umol/kg)", y = "Depth (m)")
 
 # plot these locations to see where they are
-oxygen_location_all <- rbind(oxygen_location1, oxygen_location2, 
-                             oxygen_location3)
+oxygen_location_all <- rbind(oxygen_location1, oxygen_location2)
   
 # convert data file into shapefile for spatial exploration
 oxygen_location_all_sf <- oxygen_location_all %>%
@@ -111,10 +110,14 @@ mapview(oxygen_location_all_sf)
 
 ```{r}
 #combining datasets
+selenium_clean2$depth <- round(selenium_clean2$depth, digits = 0)
+
 all_clean <- left_join(
   selenium_clean2, oxygen_location_all, 
-  join_by(EVENT_LAT == LATITUDE, EVENT_LON == LONGITUDE))
-# this didn't work because none of the lat/long matched from the oxygen dataset
+  join_by(EVENT_LAT == LATITUDE, EVENT_LON == LONGITUDE, depth == DepSM))
+
+
+
 ```
 combine datasets by something.. maybe lat/long? depth?
 
