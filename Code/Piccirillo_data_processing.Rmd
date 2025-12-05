@@ -89,16 +89,22 @@ oxygen_location3 <- oxygen_clean2 %>%
   filter(LATITUDE == -11.99983 & LONGITUDE == -81.50017)
 
 # checking oxygen depth profiles to confirm locations are in OMZ
-ggplot(oxygen_location1, aes(Sbeox0, DepSM)) + geom_point() + scale_y_reverse()
-ggplot(oxygen_location2, aes(Sbeox0, DepSM)) + geom_point() + scale_y_reverse()
-ggplot(oxygen_location3, aes(Sbeox0, DepSM)) + geom_point() + scale_y_reverse()
+ggplot(oxygen_location1, aes(Sbeox0, DepSM)) + geom_point() + 
+  scale_y_reverse() + labs(x = "Dissolved Oxygen (umol/kg)", y = "Depth (m)")
+ggplot(oxygen_location2, aes(Sbeox0, DepSM)) + geom_point() + 
+  scale_y_reverse() + labs(x = "Dissolved Oxygen (umol/kg)", y = "Depth (m)")
+ggplot(oxygen_location3, aes(Sbeox0, DepSM)) + geom_point() + 
+  scale_y_reverse() + labs(x = "Dissolved Oxygen (umol/kg)", y = "Depth (m)")
 
 # plot these locations to see where they are
-# convert data file into shapefile for spatial exploration - oxygen only
-oxygen_sf <- oxygen_above_0 %>%
+oxygen_location_all <- rbind(oxygen_location1, oxygen_location2, 
+                             oxygen_location3)
+  
+# convert data file into shapefile for spatial exploration
+oxygen_location_all_sf <- oxygen_location_all %>%
   st_as_sf(coords = c('LONGITUDE','LATITUDE'), crs=4269)
 
-mapview(oxygen_sf)
+mapview(oxygen_location_all_sf)
 
 ```
 
