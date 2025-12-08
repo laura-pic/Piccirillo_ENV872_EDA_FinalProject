@@ -65,12 +65,14 @@ oxygen_clean <- read.csv(here(
   "Data/Processed/GT-C_SBE_CTD_Proc_v30Oct2014_Explored.csv"),
   stringsAsFactors = T)
 
-oxygen_clean <- oxygen_clean %>%
+oxygen_clean2 <- oxygen_clean %>%
   select(DATE, LATITUDE, LONGITUDE, DepSM, Sbeox0)
 
 # filter depths of interest for oxygen data 100-500m
-oxygen_clean2 <- oxygen_clean %>%
-  filter(DepSM <= 500)
+#oxygen_clean2 <- oxygen_clean %>%
+  #filter(DepSM <= 500)
+# decided not to do this after trying to analyze data and not having 
+#enough oxygen points
 
 ggplot(oxygen_clean2, aes(Sbeox0, DepSM)) + geom_point() + scale_y_reverse()
 
