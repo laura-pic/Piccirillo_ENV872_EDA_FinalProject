@@ -114,8 +114,7 @@ ggplot(all_data_gathered, aes(concentration, depth, colour = species)) +
 
 
 ```{r}
-# is oxygen helping to control organic selenide and maybe the other species too? Specifically looking here in 2 locations within the OMZ.
-
+# is oxygen helping to control organic selenide and maybe the other species too? 
 oxygen_only_analysis <- all_data %>%
   filter(!is.na(Sbeox0))
   
@@ -129,8 +128,6 @@ ggplot(oxygen_only_analysis, aes(Se_IV_D_CONC_BOTTLE, Sbeox0)) +
 
 
 
-
-
 oxygen_gathered <- pivot_longer(oxygen_only_analysis, 
                                   Se_IV_D_CONC_BOTTLE:Org_Se_II_CONC_BOTTLE, 
                names_to = "species", values_to = "concentration")
@@ -138,4 +135,17 @@ oxygen_gathered <- pivot_longer(oxygen_only_analysis,
 ggplot(oxygen_gathered, aes(concentration, Sbeox0, colour = species)) + 
   geom_point() + geom_smooth(method = lm, se = F)
 ```
+
+
+```{r}
+#OMZ location analysis
+OMZ_only <- read.csv(here("Data/Processed/OMZ_data_processed.csv"),
+                     stringsAsFactors = T)
+
+
+
+ggplot(OMZ_only, aes(Sbeox0, Org_Se_II_CONC_BOTTLE)) + geom_point() + 
+  geom_smooth(method = lm, se = F)
+```
+
 
