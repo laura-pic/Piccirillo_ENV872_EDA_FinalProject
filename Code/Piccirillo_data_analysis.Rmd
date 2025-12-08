@@ -54,7 +54,23 @@ par(mfrow = c(2,2), mar=c(4,4,4,4))
 plot(selenite_lm)
 par(mfrow = c(1,1))
 
+# correlation plot
+selenite_cor <- all_data %>%
+  select(Se_IV_D_CONC_BOTTLE, depth, meanOxygen) %>%
+  na.omit()
+
+selenite_correlation <- cor(selenite_cor)
+corrplot(selenite_correlation, method = 'ellipse')
+
 # plotting the linear regression
+ggplot(all_data, aes(depth, Se_IV_D_CONC_BOTTLE)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  labs(x = "Depth (m)", y = "SeIV Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenite (SeIV) vs. Depth")
+
+# visualizing from oceanography perspective
 ggplot(all_data, aes(Se_IV_D_CONC_BOTTLE, depth)) + 
   geom_point(alpha = 0.7, size = 2.5) +
   scale_y_reverse() +
@@ -63,17 +79,33 @@ ggplot(all_data, aes(Se_IV_D_CONC_BOTTLE, depth)) +
   geom_smooth(method = lm, se = F) + 
   ggtitle(label = "Selenite (SeIV) vs. Depth")
 
-# correlation plot
+ggplot(all_data, aes(Se_IV_D_CONC_BOTTLE, meanOxygen)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  scale_y_reverse() +
+  labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenite (SeIV) vs. Depth")
+```
 
-
-# single linear regression model of SELENATE compared to depth
+```{r}
+# multiple linear regression model of SELENATE compared to depth
 selenate_lm <- lm(data = all_data, 
-                  Se_VI_D ~ depth)
+                  Se_VI_D ~ depth + meanOxygen)
 summary(selenate_lm)
 
+# checking fit of model
 par(mfrow = c(2,2), mar=c(4,4,4,4))
 plot(selenate_lm)
 par(mfrow = c(1,1))
+
+# correlation plot
+selenite_cor <- all_data %>%
+  select(Se_IV_D_CONC_BOTTLE, depth, meanOxygen) %>%
+  na.omit()
+
+selenite_correlation <- cor(selenite_cor)
+corrplot(selenite_correlation, method = 'ellipse')
 
 ggplot(all_data, aes(Se_VI_D, depth)) + 
   geom_point(alpha = 0.7, size = 2.5) +
@@ -82,8 +114,10 @@ ggplot(all_data, aes(Se_VI_D, depth)) +
        subtitle = "All Locations from GP16 Cruise") + 
   geom_smooth(method = lm, se = F) + 
   ggtitle(label = "Selenate (SeVI) vs. Depth")
+```
 
 
+```{r}
 # single linear regression model of organic selenide compared to depth
 selenide_lm <- lm(data = all_data, 
                   Org_Se_II_CONC_BOTTLE ~ depth)
@@ -99,8 +133,8 @@ ggplot(all_data, aes(Org_Se_II_CONC_BOTTLE, depth)) +
                            subtitle = "All Locations from GP16 Cruise") + 
   geom_smooth(method = lm, se = F) + 
   ggtitle(label = "Organic Selenide (Se2-) vs. Depth")
-
 ```
+
 
 
 ```{r}
@@ -114,7 +148,8 @@ ggplot(all_data_gathered, aes(concentration, depth, colour = species)) +
   geom_smooth(method = lm, se = F, linewidth = 1.8) + 
   labs(y = "Depth (m)", x = "Concentration (nm/L)", 
        color = "Selenium species") + 
-  scale_color_viridis_d(labels = c("Organic Selenide", "Selenite", "Selenate"))
+  scale_color_viridis_d(labels = c("Organic Selenide", "Selenite", "Selenate"),
+                        option = "plasma")
 ```
 
 
