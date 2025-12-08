@@ -68,34 +68,40 @@ oxygen_clean <- read.csv(here(
 oxygen_clean2 <- oxygen_clean %>%
   select(DATE, LATITUDE, LONGITUDE, DepSM, Sbeox0)
 
-# filter depths of interest for oxygen data 100-500m
-#oxygen_clean2 <- oxygen_clean %>%
-  #filter(DepSM <= 500)
-# decided not to do this after trying to analyze data and not having 
-#enough oxygen points
-
 ggplot(oxygen_clean2, aes(Sbeox0, DepSM)) + geom_point() + scale_y_reverse()
 
 ```
 
 
 ```{r, look at locations of casts for oxygen}
-# trying to combine data with all locations having oxygen data instead of choosing 2 locations - more robust oxygen data for analysis
-
+# combine data with all locations having oxygen data 
+# rounding lat/long to 3 decimal places to better match up Se data with oxygen data - this is sufficient for this analysis, as this is still within 360 ft and the ship length was 274 ft.
 oxygen_clean2$LATITUDE <- round(oxygen_clean2$LATITUDE, digits = 3)
 oxygen_clean2$LONGITUDE <- round(oxygen_clean2$LONGITUDE, digits = 3)
 selenium_clean2$EVENT_LAT <- round(selenium_clean2$EVENT_LAT, digits = 3)
 selenium_clean2$EVENT_LON <- round(selenium_clean2$EVENT_LON, digits = 3)
 
+# changing decimal places in depth for Se data
+selenium_clean2$depth <- round(selenium_clean2$depth, digits = 0)
 
-trying_something <- left_join(
-  selenium_clean2, oxygen_clean2, 
+# summarizing overlapping lat/long/depth values for oxygen
+oxygen_clean2_sum <- oxygen_clean2 %>%
+    group_by(LATITUDE, LONGITUDE, DepSM) %>% 
+    summarise(meanOxygen = mean(Sbeox0))
+
+# joining Se data with oxygen
+se_oxygen_all <- left_join(
+  selenium_clean2, oxygen_clean2_sum, 
   join_by(EVENT_LAT == LATITUDE, EVENT_LON == LONGITUDE, depth == DepSM))
 
 ```
 
 
 ```{r}
+# filter depths of interest for oxygen data 100-500m
+oxygen_clean2 <- oxygen_clean %>% filter(DepSM <= 500)
+
+
 # rounding lat/long in oxygen data to 4 decimals to match selenium data lat/long structure
 oxygen_clean2$LATITUDE <- round(oxygen_clean2$LATITUDE, digits = 4)
 oxygen_clean2$LONGITUDE <- round(oxygen_clean2$LONGITUDE, digits = 4)
