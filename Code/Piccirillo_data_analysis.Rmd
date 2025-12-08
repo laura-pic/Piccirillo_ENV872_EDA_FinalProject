@@ -16,6 +16,7 @@ output: html_document
 #install.packages("leaflet")
 #install.packages("corrplot")
 #install.packages("cowplot")
+#install.packages("devtools")
 library(tidyverse)
 library(here)
 library(ggplot2)
@@ -25,6 +26,7 @@ library(mapview)
 library(leaflet)
 library(corrplot)
 library(cowplot)
+library(devtools)
 
 # Set your working directory
 setwd("~/ENV 872/Final Project/Piccirillo_ENV872_EDA_FinalProject")
@@ -201,35 +203,19 @@ all_data_gathered <- pivot_longer(all_data,
 
 ggplot(all_data_gathered, aes(concentration, depth, colour = species)) + 
   geom_point(alpha = 0.4, size = 2.5) + scale_y_reverse(limits = c(6000, 0)) + 
-  geom_smooth(method = lm, se = F, linewidth = 1.8) + 
+  geom_smooth(method = lm, se = F, linewidth = 1.9) + 
   labs(y = "Depth (m)", x = "Concentration (nm/L)", 
-       color = "Selenium species") + 
-  scale_color_viridis_d(labels = c("Organic Selenide", "Selenite", "Selenate"),
-                        option = "plasma")
-```
+       color = "Selenium species") + scale_color_viridis_d(
+         labels = c("Organic Selenide", "Selenite", "Selenate"))
 
+# plotting all species together with oxygen
+ggplot(all_data_gathered, aes(meanOxygen, concentration, colour = species)) + 
+  geom_point(alpha = 0.4, size = 2.5) + 
+  geom_smooth(method = lm, se = F, linewidth = 1.9) + 
+  labs(x = "Dissolved Oxygen (umol/kg)", y = "Concentration (nm/L)", 
+       color = "Selenium species") + scale_color_viridis_d(
+         labels = c("Organic Selenide", "Selenite", "Selenate"))
 
-```{r}
-# is oxygen helping to control organic selenide and maybe the other species too? 
-oxygen_only_analysis <- all_data %>%
-  filter(!is.na(Sbeox0))
-  
-# try these as multiple regression: concentration continous response 
-oxygen_selenide <- lm(data = oxygen_only_analysis, 
-                      Org_Se_II_CONC_BOTTLE ~ Sbeox0)
-summary(oxygen_selenide)
-
-ggplot(oxygen_only_analysis, aes(Se_IV_D_CONC_BOTTLE, Sbeox0)) + 
-  geom_point()
-
-
-
-oxygen_gathered <- pivot_longer(oxygen_only_analysis, 
-                                  Se_IV_D_CONC_BOTTLE:Org_Se_II_CONC_BOTTLE, 
-               names_to = "species", values_to = "concentration")
-
-ggplot(oxygen_gathered, aes(concentration, Sbeox0, colour = species)) + 
-  geom_point() + geom_smooth(method = lm, se = F)
 ```
 
 
@@ -238,10 +224,30 @@ ggplot(oxygen_gathered, aes(concentration, Sbeox0, colour = species)) +
 OMZ_only <- read.csv(here("Data/Processed/OMZ_data_processed.csv"),
                      stringsAsFactors = T)
 
+# multiple linear regression for only 2 OMZ locations - selenite
+OMZ_selenite_lm <- lm(data = OMZ_only, 
+                      Se_IV_D_CONC_BOTTLE ~ depth + Sbeox0)
+summary(OMZ_selenite_lm)
 
+OMZ_selenate_lm <- lm(data = OMZ_only, 
+                      Se_VI_D ~ depth + Sbeox0)
+summary(OMZ_selenate_lm)
+
+OMZ_selenide_lm <- lm(data = OMZ_only, 
+                      Org_Se_II_CONC_BOTTLE ~ depth + Sbeox0)
+summary(OMZ_selenide_lm)
+
+
+ggplot(OMZ_only, aes(Sbeox0, depth)) + geom_point() + scale_y_reverse()
+
+ggplot(OMZ_only, aes(Org_Se_II_CONC_BOTTLE, depth)) + geom_point() + scale_y_reverse() + geom_smooth(method = lm, se = F)
 
 ggplot(OMZ_only, aes(Sbeox0, Org_Se_II_CONC_BOTTLE)) + geom_point() + 
   geom_smooth(method = lm, se = F)
 ```
 
+
+```{r}
+# plot cruise track locations of Se data with OMZ locations analyzed in a different color
+```
 
