@@ -16,7 +16,6 @@ output: html_document
 #install.packages("leaflet")
 #install.packages("corrplot")
 #install.packages("cowplot")
-#install.packages("devtools")
 library(tidyverse)
 library(here)
 library(ggplot2)
@@ -26,7 +25,6 @@ library(mapview)
 library(leaflet)
 library(corrplot)
 library(cowplot)
-library(devtools)
 
 # Set your working directory
 setwd("~/ENV 872/Final Project/Piccirillo_ENV872_EDA_FinalProject")
@@ -229,25 +227,54 @@ OMZ_selenite_lm <- lm(data = OMZ_only,
                       Se_IV_D_CONC_BOTTLE ~ depth + Sbeox0)
 summary(OMZ_selenite_lm)
 
+# checking fit of model
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(OMZ_selenite_lm)
+par(mfrow = c(1,1))
+
+# multiple linear regression for only 2 OMZ locations - selenate
 OMZ_selenate_lm <- lm(data = OMZ_only, 
                       Se_VI_D ~ depth + Sbeox0)
 summary(OMZ_selenate_lm)
 
+# checking fit of model
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(OMZ_selenate_lm)
+par(mfrow = c(1,1))
+
+# multiple linear regression for only 2 OMZ locations - selenide
 OMZ_selenide_lm <- lm(data = OMZ_only, 
                       Org_Se_II_CONC_BOTTLE ~ depth + Sbeox0)
 summary(OMZ_selenide_lm)
 
+# checking fit of model
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(OMZ_selenide_lm)
+par(mfrow = c(1,1))
 
-ggplot(OMZ_only, aes(Sbeox0, depth)) + geom_point() + scale_y_reverse()
+# plotting selenide vs depth
+ggplot(OMZ_only, aes(Org_Se_II_CONC_BOTTLE, depth)) + geom_point(size = 2.5) + scale_y_reverse() + geom_smooth(method = lm, se = F) + 
+  labs(x = 'Concentration (nm/L)', y = 'Depth (m)')
 
-ggplot(OMZ_only, aes(Org_Se_II_CONC_BOTTLE, depth)) + geom_point() + scale_y_reverse() + geom_smooth(method = lm, se = F)
-
-ggplot(OMZ_only, aes(Sbeox0, Org_Se_II_CONC_BOTTLE)) + geom_point() + 
-  geom_smooth(method = lm, se = F)
+# plotting selenide vs oxygen
+ggplot(OMZ_only, aes(Sbeox0, Org_Se_II_CONC_BOTTLE)) + geom_point(size = 2.5) + 
+  geom_smooth(method = lm, se = F) + 
+  labs(x = "Dissolved Oxygen (umol/kg)", y = "Concentration (nm/L)")
 ```
 
 
 ```{r}
 # plot cruise track locations of Se data with OMZ locations analyzed in a different color
+oxygen_OMZ_locations_map <- rbind(all_data, OMZ_only)
+  
+# convert data file into shapefile for spatial exploration
+all_data_sf <- all_data %>%
+  st_as_sf(coords = c('EVENT_LON','EVENT_LAT'), crs=4269)
+
+OMZ_only_sf <- OMZ_only %>%
+  st_as_sf(coords = c('EVENT_LON','EVENT_LAT'), crs=4269)
+
+mapview(all_data_sf, OMZ_only_sf)
+
 ```
 
