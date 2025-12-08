@@ -252,9 +252,16 @@ par(mfrow = c(2,2), mar=c(4,4,4,4))
 plot(OMZ_selenide_lm)
 par(mfrow = c(1,1))
 
+# plotting oxygen for grid
+bb <- ggplot(OMZ_only, aes(Sbeox0, depth)) + geom_point(size = 2.5) + 
+  scale_y_reverse() +
+  labs(x = 'Dissolved Oxygen (umol/kg)', y = 'Depth (m)')
+
 # plotting selenide vs depth
-ggplot(OMZ_only, aes(Org_Se_II_CONC_BOTTLE, depth)) + geom_point(size = 2.5) + scale_y_reverse() + geom_smooth(method = lm, se = F) + 
+cc <- ggplot(OMZ_only, aes(Org_Se_II_CONC_BOTTLE, depth)) + geom_point(size = 2.5) + scale_y_reverse() + geom_smooth(method = lm, se = F) + 
   labs(x = 'Concentration (nm/L)', y = 'Depth (m)')
+
+plot_grid(bb, cc, labels = "AUTO")
 
 # plotting selenide vs oxygen
 ggplot(OMZ_only, aes(Sbeox0, Org_Se_II_CONC_BOTTLE)) + geom_point(size = 2.5) + 
@@ -264,7 +271,7 @@ ggplot(OMZ_only, aes(Sbeox0, Org_Se_II_CONC_BOTTLE)) + geom_point(size = 2.5) +
 
 
 ```{r}
-# plot cruise track locations of Se data with OMZ locations analyzed in a different color
+# plot cruise track locations w/Se data & OMZ locations in a different color
 oxygen_OMZ_locations_map <- rbind(all_data, OMZ_only)
   
 # convert data file into shapefile for spatial exploration
@@ -274,7 +281,7 @@ all_data_sf <- all_data %>%
 OMZ_only_sf <- OMZ_only %>%
   st_as_sf(coords = c('EVENT_LON','EVENT_LAT'), crs=4269)
 
-mapview(all_data_sf, OMZ_only_sf)
-
+# mapview plot
+mapview(all_data_sf) + mapview(OMZ_only_sf, color = 'red', col.regions = 'red')
 ```
 
