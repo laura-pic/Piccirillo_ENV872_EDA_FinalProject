@@ -87,7 +87,6 @@ plot_grid(a, b, labels = "AUTO")
 # oxygen vs selenite plot 
 ggplot(all_data, aes(meanOxygen, Se_IV_D_CONC_BOTTLE)) + 
   geom_point(alpha = 0.7, size = 2.5) +
-  scale_y_reverse() +
   labs(x = "Dissolved oxygen (umol/kg)", y = "SeIV Concentration (nm/L)", 
        subtitle = "All Locations from GP16 Cruise") + 
   geom_smooth(method = lm, se = F) + 
@@ -116,7 +115,15 @@ selenate_correlation <- cor(selenate_cor)
 corrplot(selenate_correlation, method = 'ellipse')
 
 # plotting the linear regression
-ggplot(all_data, aes(Se_VI_D, depth)) + 
+x <- ggplot(all_data, aes(depth, Se_VI_D)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  labs(x = "Depth (m)", y = "SeVI Concentration (nm/L)",
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenate (SeVI) vs. Depth")
+
+# visualizing it as oceanographic data
+y <- ggplot(all_data, aes(Se_VI_D, depth)) + 
   geom_point(alpha = 0.7, size = 2.5) +
   scale_y_reverse(limits = c(6000, 0)) +
   labs(y = "Depth (m)", x = "SeVI Concentration (nm/L)",
@@ -124,7 +131,16 @@ ggplot(all_data, aes(Se_VI_D, depth)) +
   geom_smooth(method = lm, se = F) + 
   ggtitle(label = "Selenate (SeVI) vs. Depth")
 
+# grid the above plots for report
+plot_grid(x, y, labels = "AUTO")
 
+# oxygen vs selenate plot 
+ggplot(all_data, aes(meanOxygen, Se_VI_D)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  labs(x = "Dissolved oxygen (umol/kg)", y = "SeVI Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenate (SeIV) vs. Dissolved Oxygen")
 
 ```
 
@@ -140,22 +156,41 @@ plot(selenide_lm)
 par(mfrow = c(1,1))
 
 # correlation plot
-selenate_cor <- all_data %>%
-  select(Se_VI_D, depth, meanOxygen) %>%
+selenide_cor <- all_data %>%
+  select(Org_Se_II_CONC_BOTTLE, depth, meanOxygen) %>%
   na.omit()
 
-selenate_correlation <- cor(selenate_cor)
-corrplot(selenate_correlation, method = 'ellipse')
+selenide_correlation <- cor(selenide_cor)
+corrplot(selenide_correlation, method = 'ellipse')
 
 # plotting the linear regression
-ggplot(all_data, aes(Org_Se_II_CONC_BOTTLE, depth)) + 
+z <- ggplot(all_data, aes(depth, Org_Se_II_CONC_BOTTLE)) + 
+  geom_point(alpha = 0.7, size = 2.5) + 
+  labs(x = "Depth (m)", y = "Se2- Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Organic Selenide (Se2-) vs. Depth")
+
+# visualizing as oceanographic data
+aa <- ggplot(all_data, aes(Org_Se_II_CONC_BOTTLE, depth)) + 
   geom_point(alpha = 0.7, size = 2.5) +
   scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)",
                            subtitle = "All Locations from GP16 Cruise") + 
   geom_smooth(method = lm, se = F) + 
   ggtitle(label = "Organic Selenide (Se2-) vs. Depth")
-```
 
+# grid above plots for report
+plot_grid(z, aa, labels = "AUTO")
+
+# oxygen vs selenide plot 
+ggplot(all_data, aes(meanOxygen, Org_Se_II_CONC_BOTTLE)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  labs(x = "Dissolved oxygen (umol/kg)", y = "SeVI Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenide (Se2-) vs. Dissolved Oxygen")
+
+```
 
 
 ```{r}
