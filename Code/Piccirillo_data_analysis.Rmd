@@ -104,8 +104,15 @@ all_data_gathered <- pivot_longer(all_data,
                                   Se_IV_D_CONC_BOTTLE:Org_Se_II_CONC_BOTTLE, 
                names_to = "species", values_to = "concentration")
 
+all_data_gathered <- all_data_gathered %>%
+  colnames()
+
 ggplot(all_data_gathered, aes(concentration, depth, colour = species)) + 
-  geom_point() + scale_y_reverse() + geom_smooth()
+  geom_point(alpha = 0.4, size = 2.5) + scale_y_reverse(limits = c(6000, 0)) + 
+  geom_smooth(method = lm, se = F, linewidth = 1.8) + 
+  labs(y = "Depth (m)", x = "Concentration (nm/L)", 
+       color = "Selenium species") + 
+  scale_color_viridis_d(labels = c("Organic Selenide", "Selenite", "Selenate"))
 ```
 
 
