@@ -85,7 +85,7 @@ b <- ggplot(all_data, aes(Se_IV_D_CONC_BOTTLE, depth)) +
 plot_grid(a, b, labels = "AUTO")
 
 # oxygen vs selenite plot 
-c <- ggplot(all_data, aes(meanOxygen, Se_IV_D_CONC_BOTTLE)) + 
+ggplot(all_data, aes(meanOxygen, Se_IV_D_CONC_BOTTLE)) + 
   geom_point(alpha = 0.7, size = 2.5) +
   scale_y_reverse() +
   labs(x = "Dissolved oxygen (umol/kg)", y = "SeIV Concentration (nm/L)", 
@@ -94,6 +94,7 @@ c <- ggplot(all_data, aes(meanOxygen, Se_IV_D_CONC_BOTTLE)) +
   ggtitle(label = "Selenite (SeIV) vs. Dissolved Oxygen")
 
 ```
+
 
 ```{r}
 # multiple linear regression model of SELENATE compared to depth
@@ -107,13 +108,14 @@ plot(selenate_lm)
 par(mfrow = c(1,1))
 
 # correlation plot
-selenite_cor <- all_data %>%
-  select(Se_IV_D_CONC_BOTTLE, depth, meanOxygen) %>%
+selenate_cor <- all_data %>%
+  select(Se_VI_D, depth, meanOxygen) %>%
   na.omit()
 
-selenite_correlation <- cor(selenite_cor)
-corrplot(selenite_correlation, method = 'ellipse')
+selenate_correlation <- cor(selenate_cor)
+corrplot(selenate_correlation, method = 'ellipse')
 
+# plotting the linear regression
 ggplot(all_data, aes(Se_VI_D, depth)) + 
   geom_point(alpha = 0.7, size = 2.5) +
   scale_y_reverse(limits = c(6000, 0)) +
@@ -121,19 +123,31 @@ ggplot(all_data, aes(Se_VI_D, depth)) +
        subtitle = "All Locations from GP16 Cruise") + 
   geom_smooth(method = lm, se = F) + 
   ggtitle(label = "Selenate (SeVI) vs. Depth")
+
+
+
 ```
 
 
 ```{r}
-# single linear regression model of organic selenide compared to depth
+# multiple linear regression model of organic selenide compared to depth & oxygen
 selenide_lm <- lm(data = all_data, 
-                  Org_Se_II_CONC_BOTTLE ~ depth)
+                  Org_Se_II_CONC_BOTTLE ~ depth + meanOxygen)
 summary(selenide_lm)
 
 par(mfrow = c(2,2), mar=c(4,4,4,4))
 plot(selenide_lm)
 par(mfrow = c(1,1))
 
+# correlation plot
+selenate_cor <- all_data %>%
+  select(Se_VI_D, depth, meanOxygen) %>%
+  na.omit()
+
+selenate_correlation <- cor(selenate_cor)
+corrplot(selenate_correlation, method = 'ellipse')
+
+# plotting the linear regression
 ggplot(all_data, aes(Org_Se_II_CONC_BOTTLE, depth)) + 
   geom_point(alpha = 0.7, size = 2.5) +
   scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)",
