@@ -41,7 +41,8 @@ theme_set(mytheme)
 all_data <- read.csv(here("Data/Processed/se_oxygen_processed.csv"),
                      stringsAsFactors = T)
 
-# single linear regression model of selenite compared to depth
+# single linear regression model of SELENITE compared to depth
+# using single linear regressions because continuous response/continuous explanatory
 selenite_lm <- lm(data = all_data, 
                   Se_IV_D_CONC_BOTTLE ~ depth)
 summary(selenite_lm)
@@ -55,8 +56,10 @@ par(mfrow = c(1,1))
 ggplot(all_data, aes(Se_IV_D_CONC_BOTTLE, depth)) + 
   geom_point(alpha = 0.7, size = 2.5) +
   scale_y_reverse() +
-  labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)") + 
-  geom_smooth(method = lm, se = F)
+  labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenite (SeIV) vs. Depth")
 
 # single linear regression model of SELENATE compared to depth
 selenate_lm <- lm(data = all_data, 
@@ -70,8 +73,10 @@ par(mfrow = c(1,1))
 ggplot(all_data, aes(Se_VI_D, depth)) + 
   geom_point(alpha = 0.7, size = 2.5) +
   scale_y_reverse(limits = c(6000, 0)) +
-  labs(y = "Depth (m)", x = "SeVI Concentration (nm/L)") + 
-  geom_smooth(method = lm, se = F)
+  labs(y = "Depth (m)", x = "SeVI Concentration (nm/L)",
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenate (SeVI) vs. Depth")
 
 
 # single linear regression model of organic selenide compared to depth
@@ -85,8 +90,10 @@ par(mfrow = c(1,1))
 
 ggplot(all_data, aes(Org_Se_II_CONC_BOTTLE, depth)) + 
   geom_point(alpha = 0.7, size = 2.5) +
-  scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)") + 
-  geom_smooth(method = lm, se = F)
+  scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)",
+                           subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Organic Selenide (Se2-) vs. Depth")
 
 ```
 
