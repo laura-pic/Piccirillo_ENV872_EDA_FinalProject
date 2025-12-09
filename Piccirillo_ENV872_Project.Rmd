@@ -1,0 +1,87 @@
+---
+title: 'Phase-Specific Selenium (6+, 4+, 2-) Concentrations in the Eastern Tropical Pacific Ocean'
+subtitle: https://github.com/laura-pic/Piccirillo_ENV872_EDA_FinalProject
+author: "Laura Piccirillo" 
+date: "December 2025"
+output: html_document
+toc: true
+---
+
+\listoftables 
+\listoffigures 
+
+```{r setup, include=FALSE}
+# Install and load packages
+#install.packages("tidyverse")
+#install.packages("here")
+#install.packages("ggplot2")
+#install.packages("lubridate")
+#install.packages("sf")
+#install.packages("mapview")
+#install.packages("leaflet")
+library(tidyverse)
+library(here)
+library(ggplot2)
+library(lubridate)
+library(sf)
+library(mapview)
+library(leaflet)
+
+# Set your working directory
+setwd("~/ENV 872/Final Project/Piccirillo_ENV872_EDA_FinalProject")
+getwd()
+here()
+
+# Set your ggplot theme
+mytheme <- theme_bw() + theme(axis.text = element_text(color = "black"),
+                              legend.position = "top",
+                              legend.text = element_text(color = "black"))
+theme_set(mytheme)
+```
+
+# Rationale and Research Questions
+
+Selenium (Se) is a redox-sensitive trace element in seawater, meaning it exists in many oxidation states (+6, +4, 0, 2-) and in very low quantities. It is a required micronutrient for many marine organisms, while also being a toxin if at elevated concentrations. The marine biogeochemical cycle of Se is not well constrained due to its low concentrations in seawater and analytical challenges with measuring these trace amounts of Se. Here, concentrations of individual phases (species) of Se were measured in seawater to aid in furthering our understanding of the marine cycling of this element.
+
+The Eastern Tropical Pacific Ocean is characterized by unique oceanographic features, such as an oxygen minimum zone (OMZ) near the Peruvian coast and the East Pacific Rise and hydrothermal plume more westward. These intriguing oceanographic features led to the planning and execution of a GEOTRACES cruise across the East Pacific Zonal Transect (Moffett and German 2018). The OMZ is the key feature at play to help constrain redox transformations and concentrations of Se from this transect. My central research theme here is to understand how species of Se change with depth and dissolved oxygen concentrations across this transect. More specifically, I will investigate two locations in the OMZ to look more closely at Se phase shifts when oxygen is depleted.
+
+
+### [Question 1]{.underline}: Does selenium speciation (IV, VI, ORG) across the whole transect depend on depth and oxygen?
+
+### [Question 2]{.underline}: In the oxygen minimum zone (OMZ) off the Peruvian Coast, do oxygen and depth both significantly control selenium speciation?
+
+\newpage
+
+# Dataset Information
+
+Both datasets used in this project were downloaded from the "Biological and Chemical Oceanography Data Management Office" (BCO-DMO) website: https://www.bco-dmo.org/. 
+
+|  Column | Description                         |
+|--------:|:------------------------------------|
+|  Source | EPAair_O3_PM25_NC1819_Processed.csv |
+| Website | 2018-2019                           |
+|         | EPA Air Quality System (AQS)        |
+
+
+# Exploratory Analysis
+
+
+# Data Wrangling & Processing
+
+
+
+# Analysis
+
+## Question 1: \<insert specific question here and add additional subsections for additional questions below, if needed\>
+
+## Question 2:
+
+\newpage
+
+# Summary and Conclusions
+
+\newpage
+
+# References
+
+Moffett, J. et al. 2014. U.S. GEOTRACES EPZT Cruise Report. <https://geotracesold.sedoo.fr/images/stories/geotraces/Cruises/cruises/TN303_EPZT_Cruise_Report.pdf>
