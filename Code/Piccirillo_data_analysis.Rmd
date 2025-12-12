@@ -46,6 +46,11 @@ all_data <- read.csv(here("Data/Processed/se_oxygen_processed.csv"),
                      stringsAsFactors = T)
 
 # multiple linear regression model of SELENITE compared to depth & oxygen
+
+# removes NA's for selenite
+selenite_data <- all_data %>%
+  filter(!is.na(Se_IV_D_CONC_BOTTLE) & !is.na(meanOxygen))
+
 # using multiple linear regressions because continuous response/continuous explanatory
 selenite_lm <- lm(data = all_data, 
                   Se_IV_D_CONC_BOTTLE ~ depth + meanOxygen)
@@ -96,6 +101,10 @@ ggplot(all_data, aes(meanOxygen, Se_IV_D_CONC_BOTTLE)) +
 
 
 ```{r}
+# removing NA's for selenate
+selenate_data <- all_data %>%
+  filter(!is.na(Se_VI_D) & !is.na(meanOxygen))
+
 # multiple linear regression model of SELENATE compared to depth
 selenate_lm <- lm(data = all_data, 
                   Se_VI_D ~ depth + meanOxygen)
@@ -146,6 +155,10 @@ ggplot(all_data, aes(meanOxygen, Se_VI_D)) +
 
 
 ```{r}
+#removing NA's for selenide
+selenide_data <- all_data %>%
+  filter(!is.na(Org_Se_II_CONC_BOTTLE) & !is.na(meanOxygen))
+
 # multiple linear regression model of organic selenide compared to depth & oxygen
 selenide_lm <- lm(data = all_data, 
                   Org_Se_II_CONC_BOTTLE ~ depth + meanOxygen)
