@@ -1,0 +1,697 @@
+---
+title: "Phase-Specific Selenium (6+, 4+, 2-) Concentrations in the Eastern Tropical
+  Pacific Ocean"
+author: "Laura Piccirillo"
+date: "December 2025"
+output:
+  html_document:
+    toc: true
+    toc_depth: 1
+    number_sections: true
+subtitle: "https://github.com/laura-pic/Piccirillo_ENV872_EDA_FinalProject"
+---
+
+```{r setup, include=FALSE}
+# Install and load packages
+#install.packages("tidyverse")
+#install.packages("here")
+#install.packages("ggplot2")
+#install.packages("lubridate")
+#install.packages("sf")
+#install.packages("mapview")
+#install.packages("leaflet")
+#install.packages("corrplot")
+#install.packages("cowplot")
+library(tidyverse)
+library(here)
+library(ggplot2)
+library(lubridate)
+library(sf)
+library(mapview)
+library(leaflet)
+library(corrplot)
+library(cowplot)
+
+# Set your working directory
+setwd("~/ENV 872/Final Project/Piccirillo_ENV872_EDA_FinalProject")
+getwd()
+here()
+
+# Set your ggplot theme
+mytheme <- theme_bw() + theme(axis.text = element_text(color = "black"),
+                              legend.position = "top",
+                              legend.text = element_text(color = "black"))
+theme_set(mytheme)
+```
+
+# Rationale and Research Questions
+
+Selenium (Se) is a redox-sensitive trace element in seawater, meaning it exists in many oxidation states (+6, +4, 0, 2-) and in very low quantities. It is a required micronutrient for many marine organisms, while also being a toxin if at elevated concentrations. The marine biogeochemical cycle of Se is not well constrained due to its low concentrations in seawater and analytical challenges with measuring these trace amounts of Se. Here, concentrations of individual phases (species) of Se were measured in seawater to aid in furthering our understanding of the marine cycling of this element.
+
+The Eastern Tropical Pacific Ocean is characterized by unique oceanographic features, such as an oxygen minimum zone (OMZ) near the Peruvian coast and the East Pacific Rise and hydrothermal plume more westward. These intriguing oceanographic features led to the planning and execution of a GEOTRACES cruise across the East Pacific Zonal Transect (Moffett and German 2018). The OMZ is the key feature at play to help constrain redox transformations and concentrations of Se from this transect. My central research theme here is to understand how species of Se change with depth and dissolved oxygen concentrations across this transect. More specifically, I will investigate two locations in the OMZ to look more closely at Se phase shifts when oxygen is depleted.
+
+### [Question 1]{.underline}: Does selenium speciation (IV, VI, ORG) across the whole transect depend on depth and oxygen?
+
+### [Question 2]{.underline}: In the oxygen minimum zone (OMZ) off the Peruvian Coast, do oxygen and depth both significantly control selenium speciation?
+
+# Dataset Information
+
+Both datasets used in this project were downloaded from the "Biological and Chemical Oceanography Data Management Office" (BCO-DMO) website: <https://www.bco-dmo.org/>. Both were found on this website within the U.S. GEOTRACES East Pacific Zonal Transect (GP16) Project. The original datasets used had more information and parameters than needed for this project, so certain columns were selected in the data wrangling step. The descriptions and tables below only include the columns used in data analysis. Additional information on data wrangling procedures can be found in section 4.
+
+[Selenium dataset]{.underline}: Samples analyzed were collected from 10/25/2013 - 12/20/2013 during the GEOTRACES GP16 cruise from Peru to Tahiti. Seawater was collected with a GEOTRACES CTD (GT-C/12L GoFlo) at different stations along the cruise transect. Seawater used for dissolved selenium measurements were filtered with 0.45um Supor membrane filters, acidified to a pH \< 2, and stored at room temperature in the dark. Dissolved selenite and selenate were analyzed in triplicate using selective hydride generation/atomic absorption spectrometry, and organic selenide was calculated as the difference between total dissolved selenium and selenite/selenate concentrations. The detection limit for dissolved selenium concentrations was 0.02nmol/L.
+
+[Oxygen dataset]{.underline}: Oxygen data was collected from 10/25/2013 - 12/20/2013 during the GEOTRACES GP16 cruise from Peru to Tahiti. A CTD Sea-Bird SEACAT 19 was used for seawater collection and to measure conductivity, temperature, and depth. Oxygen was measured with a GT-C/12L-GoFlo and processed on board with CTD processing software immediately following the casts. Oxygen data is available for all 36 station locations where casts were completed, and have values for depth in 1 meter increments.
+
+A much more in depth description of sampling techniques and materials from the GP16 cruise can be found in the cruise report: Moffett et al. 2014 (see references for complete citation).
+
+```{r table 1, echo=FALSE, warning=FALSE}
+# making selenium data table
+Name <- c(
+  "EVENT_LAT", "EVENT_LON", "DEPTH", "PI_DATE", "Se_IV_D_CONC_BOTTLE", 
+  "Se_VI_D_CONC_BOTTLE", "Org_Se_II_CONC_BOTTLE")
+Description <- c(
+  "Latitude at the start of the event, according to the event log (decimal degrees)",
+                 "Longitude according to the event log; West is negative (decimal degrees)", 
+  "Depth of sample (meters)", "PI-supplied date in format YYYYMMDD", 
+  "Dissolved selenite concentration from a bottle sample (nanomoles/liter)", 
+  "Dissolved selenate concentration from a bottle sample (nanomoles/liter)", 
+  "Organic selenide concentration from a bottle sample (nanomoles/liter)")
+dataset <- data.frame(Name, Description)
+colnames(dataset) <- c("Column", "Description")
+  
+knitr::kable(dataset, caption = "Table 1: Selenium Dataset Structure")
+```
+
+```{r table 2, echo=FALSE, warning=FALSE}
+# making oxygen data table
+Name2 <- c(
+  "DATE", "LATITUDE", "LONGITUDE", "DepSM", "Sbeox0")
+Description2 <- c(
+  "Station Date (GMT) YYYYMMDD", 
+  "Station Latitude (South is negative; decimal degrees)", 
+  "Station Longitude (West is negative; decimal degrees)", 
+  "Depth salt water lat = -12.0057 (meters)", 
+  "Oxygen SBE 43 WS = 2 (umol/kg)")
+dataset2 <- data.frame(Name2, Description2)
+colnames(dataset2) <- c("Column", "Description")
+  
+knitr::kable(dataset, caption = "Table 2: Oxygen Dataset Structure")
+```
+
+# Exploratory Analysis
+
+The two datasets described above were imported, explored, and wrangled separately. A description of how they were eventually combined can be found in section 4.
+
+[Selenium dataset]{.underline}: Data variables of interest were SeIV, SeVI, OrgSe, Latitude, Longitude, Depth, and Date. Missing values were indicated by "nd" in the dataset. These were changed to NAs for the selenium columns. These columns were also changed to numeric variables. The date column was changed to a date object with the lubridate function "ymd". Depth, latitude, and longitude are all numeric variables as well. While plotting variables of interest to explore data, an outlier was noted for SeIV (row 344) and was removed by setting it to NA. Also, for all selenium species (IV, VI, 2-) values of 0 for concentrations were set to NA as concentrations of trace elements can never truly be 0, but instead below the detection limits. Scatter plots were generated to explore the concentration of species with depth (Figure 1). Many of the plots in this report have depth on the y-axis in reverse, as this is common practice in oceanographic research. An additional plot comparing the distribution of concentrations for each selenium species was generated for visualization (Figure 2).
+
+[Oxygen dataset]{.underline}: Data variables of interest were Date, Latitude, Longitude, Depth, and Dissolved Oxygen. The date column was changed to a date object with the lubridate function "ymd". Latitude, Longitude, depth, and dissolved oxygen are all numeric variables. Negative dissolved oxygen values were removed, as dissolved oxygen levels cannot be negative and these measurements were likely an instrumental error. All dissolved oxygen values were plotted with depth to observe the spread of oxygen data (Figure 3).
+
+The datasets were saved individually with the write.csv function as "explored" datasets to preserve any edits made during the exploration step.
+
+```{r, data exploration, include=FALSE}
+# Load your datasets
+selenium_conc <- read.csv(here(
+  "Data/Raw/As_Se_IO_BOTTLE.csv"), 
+                          stringsAsFactors = T)
+oxygen <- read.csv(
+  here(
+  "Data/Raw/GT-C_SBE_CTD_Proc_v30Oct2014.csv"),
+  stringsAsFactors = T)
+
+# explore selenium dataset
+dim(selenium_conc)
+glimpse(selenium_conc)
+
+# check class of selenium concentrations for each species and depth
+class(selenium_conc$Se_IV_D_CONC_BOTTLE)
+class(selenium_conc$Se_VI_D)
+class(selenium_conc$Org_Se_II_CONC_BOTTLE)
+class(selenium_conc$depth)
+
+# changing missing values indicated by "nd" to NAs
+selenium_conc$Se_IV_D_CONC_BOTTLE <- na_if(
+  selenium_conc$Se_IV_D_CONC_BOTTLE, "nd")
+sum(is.na(selenium_conc$Se_IV_D_CONC_BOTTLE))
+selenium_conc$Se_IV_D_CONC_BOTTLE <- as.numeric(as.character(
+  selenium_conc$Se_IV_D_CONC_BOTTLE))
+
+selenium_conc$Se_VI_D <- na_if(
+  selenium_conc$Se_VI_D, "nd")
+sum(is.na(selenium_conc$Se_VI_D))
+selenium_conc$Se_VI_D <- as.numeric(as.character(
+  selenium_conc$Se_VI_D))
+
+selenium_conc$Org_Se_II_CONC_BOTTLE <- na_if(
+  selenium_conc$Org_Se_II_CONC_BOTTLE, "nd")
+sum(is.na(selenium_conc$Org_Se_II_CONC_BOTTLE))
+selenium_conc$Org_Se_II_CONC_BOTTLE <- as.numeric(as.character(
+  selenium_conc$Org_Se_II_CONC_BOTTLE))
+
+# recheck class of selenium species has been changed to numeric
+class(selenium_conc$Se_IV_D_CONC_BOTTLE)
+class(selenium_conc$Se_VI_D)
+class(selenium_conc$Org_Se_II_CONC_BOTTLE)
+
+# look at distribution of values for total Se and each species
+summary(selenium_conc$Se_IV_D_CONC_BOTTLE)
+summary(selenium_conc$Se_VI_D)
+summary(selenium_conc$Org_Se_II_CONC_BOTTLE)
+
+# change date column to date object
+selenium_conc$PI_DATE <- ymd(selenium_conc$PI_DATE)
+
+# explore oxygen dataset
+dim(oxygen)
+glimpse(oxygen)
+
+# check class of oxygen values
+class(oxygen$Sbeox0)
+class(oxygen$DepSM)
+
+# change date column to date object
+oxygen$DATE <- ymd(oxygen$DATE)
+
+# look at distribution of oxygen values
+summary(oxygen$Sbeox0)
+```
+
+```{r, include=FALSE}
+# visualizing continuous variables of concentrations and depth
+# seIV_plot <- ggplot(selenium_conc, aes(Se_IV_D_CONC_BOTTLE, depth)) + geom_point() +
+  #scale_y_reverse(limits = c(6000, 0)) + 
+  #labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)") + 
+  #geom_smooth(method = lm, se = F)
+#plot above showed an outlier
+# remove outliers row 344
+selenium_conc$Se_IV_D_CONC_BOTTLE[344] <- NA
+
+# remove zeroes from Se concentrations - data can never truly be 0. Setting them to NA (figured this out with the help function of na_if)
+selenium_conc <- selenium_conc %>%
+  mutate(across(c(Se_IV_D_CONC_BOTTLE, Se_VI_D, Org_Se_II_CONC_BOTTLE), 
+                ~na_if(., 0)))
+```
+
+```{r, fig.cap="Figure 1. A) Selenite (IV), B) selenate (VI), and C) organic selenide (2-) concentrations plotted against depth", fig.align='center', warning=FALSE, echo=FALSE, message=FALSE, fig.height=8, fig.width=8}
+# retry plot after outlier set to NA and zeroes removed
+explore_a <- ggplot(selenium_conc, aes(Se_IV_D_CONC_BOTTLE, depth)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  scale_y_reverse(limits = c(6000, 0)) + 
+  labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)") + 
+  geom_smooth(method = lm, se = F)
+
+explore_b <- ggplot(selenium_conc, aes(Se_VI_D, depth)) + 
+  geom_point(alpha = 0.7, size = 2.5) + 
+  labs(y = "Depth (m)", x = "SeVI Concentration (nm/L)") +
+  geom_smooth(method = lm, se = F) +
+  scale_y_reverse(limits = c(6000, 0))
+
+explore_c <- ggplot(selenium_conc, aes(Org_Se_II_CONC_BOTTLE, depth)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)") + 
+  geom_smooth(method = lm, se = F)
+
+plot_grid(explore_a, explore_b, explore_c, labels = "AUTO")
+```
+
+```{r, fig.align='center', fig.cap="Figure 2. Dissolved selenium concentrations plotted by individual species", echo=FALSE, warning=FALSE, fig.height=5}
+# comparing frequency of continuous variables (concentrations) 
+ggplot(selenium_conc) + geom_density(aes(x = Se_IV_D_CONC_BOTTLE)) + 
+  geom_density(aes(x = Se_VI_D), color = "blue") + 
+  geom_density(aes(x = Org_Se_II_CONC_BOTTLE), color = "orange") + 
+  labs(x = "Concentration (nm/L)", y = "Count") + 
+  geom_text(x = 0.45, y = 2.25, label = "Organic Se 2-", color = "orange", size = 5) + 
+  geom_text(x = 0.5, y = 1.35, label = "SeIV", size = 5) +
+  geom_text(x = 1.25, y = 0.85, label = "SeVI", color = "blue", size = 5)
+```
+
+```{r, plotting oxygen dataset for exploration, echo=FALSE, warning=FALSE, fig.cap="Figure 3. Dissolved oxygen concentrations for GP16 cruise plotted with depth", fig.align='center', fig.height=5}
+# plotting oxygen data with depth
+#ggplot(oxygen, aes(Sbeox0, DepSM)) + geom_point(alpha = 0.5) + 
+  #scale_y_reverse() + labs(x = "Dissolved oxygen (umol/kg)", y = "Depth (m)")
+
+# removing negative dissolved oxygen values as instrumental error because DO cannot be negative
+oxygen_above_0 <- oxygen %>%
+  filter(Sbeox0 >= 0)
+  
+# plotting oxygen again with no negative values
+ggplot(oxygen_above_0, aes(Sbeox0, DepSM)) + geom_point(alpha = 0.3) + 
+  scale_y_reverse() + labs(x = "Dissolved oxygen (umol/kg)", y = "Depth (m)")
+```
+
+```{r, include=FALSE}
+# saving CSV as explored for Se concentration data
+write.csv(selenium_conc, row.names = F, file = "./Data/Processed/As_Se_IO_BOTTLE_Explored.csv")
+
+# saving CSV as explored for oxygen data
+write.csv(oxygen_above_0, row.names = F, file = "./Data/Processed/GT-C_SBE_CTD_Proc_v30Oct2014_Explored.csv")
+```
+
+# Data Wrangling & Processing
+
+Explored datasets were uploaded for processing. In both datasets, columns of interest for this project were selected (Table 1 and 2). In the selenium dataset, rows with NA values for all three selenium species were removed from the dataset, as they offered no value to this project. Before merging the datasets, latitude and longitude values were rounded to 3 decimal places to allow for more location overlap between the datasets. This location accuracy of 3 decimal places in Lat/Long points is sufficient for this analysis, as this is still within 360 ft of the next point and the ship length itself was 274 ft. Because of this rounding, some overlapping values existed in the oxygen dataset with the same latitude, longitude, and depth values. To prevent many-to-many relationships upon merging, these double data points were summarized with a mean oxygen value. Depth values in the selenium dataset were rounded to 0 decimal places to match the oxygen dataset and make data merging smooth. Datasets were then joined by matching latitude, longitude, and depth values. This dataset was saved as a processed CSV file to be used in answering research question 1.
+
+To address research question 2, columns of interest were selected from the explored oxygen dataset. The dataset was filtered for depth values equal to or less than 500 meters, as this is the most prominent oxygen-depleted zone in the water column at this location. For this research question, location within the OMZ was key; latitude/longitude points were rounded to 4 decimal places to match the original form of the selenium dataset, and locations of interest were chosen. Locations were selected by latitude/longitude with nearly complete depth profiles of oxygen and proximity to the Peruvian coast as this is where the OMZ is. Only two locations met these requirements and also contained selenium concentration data. These were filtered from the dataset and plotted to confirm their location in the OMZ (Figure ). The OMZ location dataset was combined with the selenium dataset and oxygen values of NA were removed, so only OMZ location data remained. This processed dataset was saved as a CSV.
+
+```{r dataset processing, include=FALSE}
+# uploading selenium dataset and selecting columns of interest
+selenium_clean <- read.csv(here("Data/Processed/As_Se_IO_BOTTLE_Explored.csv"),
+                           stringsAsFactors = T)
+  
+selenium_clean <- selenium_clean %>%
+  select(EVENT_LAT, EVENT_LON, PI_DATE, depth, 
+         Se_IV_D_CONC_BOTTLE:Org_Se_II_CONC_BOTTLE)
+
+# change date to date object
+selenium_clean$PI_DATE <- ymd(selenium_clean$PI_DATE)
+
+# removing rows with NAs for all 3 Se species ONLY
+sum(is.na(selenium_clean$Org_Se_II_CONC_BOTTLE))
+sum(is.na(selenium_clean$Se_VI_D))
+sum(is.na(selenium_clean$Se_IV_D_CONC_BOTTLE))
+
+selenium_clean2 <- selenium_clean %>%
+  filter(
+    !is.na(Se_IV_D_CONC_BOTTLE) | !is.na(Se_VI_D) | 
+      !is.na(Org_Se_II_CONC_BOTTLE))
+  
+# uploading oxygen data and selecting columns of interest
+oxygen_clean <- read.csv(here(
+  "Data/Processed/GT-C_SBE_CTD_Proc_v30Oct2014_Explored.csv"),
+  stringsAsFactors = T)
+
+oxygen_clean2 <- oxygen_clean %>%
+  select(DATE, LATITUDE, LONGITUDE, DepSM, Sbeox0)
+```
+
+```{r, look at locations of casts for oxygen, include=FALSE}
+# combine data with all locations having oxygen data 
+# rounding lat/long to 3 decimal places to better match Se & oxygen data 
+oxygen_clean2$LATITUDE <- round(oxygen_clean2$LATITUDE, digits = 3)
+oxygen_clean2$LONGITUDE <- round(oxygen_clean2$LONGITUDE, digits = 3)
+selenium_clean2$EVENT_LAT <- round(selenium_clean2$EVENT_LAT, digits = 3)
+selenium_clean2$EVENT_LON <- round(selenium_clean2$EVENT_LON, digits = 3)
+
+# summarizing overlapping lat/long/depth values for oxygen
+oxygen_clean2_sum <- oxygen_clean2 %>%
+    group_by(LATITUDE, LONGITUDE, DepSM) %>% 
+    summarise(meanOxygen = mean(Sbeox0))
+
+# changing decimal places in depth for Se data
+selenium_clean2$depth <- round(selenium_clean2$depth, digits = 0)
+
+# joining Se data with oxygen
+se_oxygen_all <- left_join(
+  selenium_clean2, oxygen_clean2_sum, 
+  join_by(EVENT_LAT == LATITUDE, EVENT_LON == LONGITUDE, depth == DepSM))
+
+# saving combined dataset as processed csv
+write.csv(se_oxygen_all, row.names = F, 
+          "./Data/Processed/se_oxygen_processed.csv")
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 4. A) OMZ location 1 and B) OMZ location 2, with dissolved oxygen plotted with depth.", fig.height=6, fig.width=6.5, fig.align='center'}
+# select columns and filter depths of interest for oxygen data 100-500m
+oxygen_OMZ <- oxygen_clean %>% 
+  select(DATE, LATITUDE, LONGITUDE, DepSM, Sbeox0) %>%
+  filter(DepSM <= 500)
+
+# rounding lat/long in oxygen data to 4 decimals to match selenium data lat/long structure
+oxygen_OMZ$LATITUDE <- round(oxygen_OMZ$LATITUDE, digits = 4)
+oxygen_OMZ$LONGITUDE <- round(oxygen_OMZ$LONGITUDE, digits = 4)
+
+# choose locations of interest - picked points with nearly complete depth profiles of oxygen and filtered them by lat/long - picked ones closest to Peruvian coast as this is where OMZ is - only 2 really met requirements. Also looked for locations with Se data!
+oxygen_location1 <- oxygen_OMZ %>%
+  filter(LATITUDE == -12.0057 & LONGITUDE == -79.1952)
+
+#long of -77.8180 vs -77.8181 assumed to be the same here
+oxygen_location2 <- oxygen_OMZ %>%
+  filter(LATITUDE == -12.0448 & LONGITUDE == -77.8180)
+
+# checking oxygen depth profiles to confirm locations are in OMZ
+process_a <- ggplot(oxygen_location1, aes(Sbeox0, DepSM)) + geom_point() + 
+  scale_y_reverse() + labs(x = "Dissolved Oxygen (umol/kg)", y = "Depth (m)")
+process_b <- ggplot(oxygen_location2, aes(Sbeox0, DepSM)) + geom_point() + 
+  scale_y_reverse() + labs(x = "Dissolved Oxygen (umol/kg)", y = "Depth (m)")
+
+plot_grid(process_a, process_b, labels = "AUTO")
+
+# combine chosen locations
+oxygen_OMZ_locations <- rbind(oxygen_location1, oxygen_location2)
+oxygen_OMZ_locations$LATITUDE <- round(oxygen_OMZ_locations$LATITUDE, 
+                                       digits = 3)
+oxygen_OMZ_locations$LONGITUDE <- round(oxygen_OMZ_locations$LONGITUDE,
+                                        digits = 3)
+# combining datasets for OMZ data
+OMZ_data <- left_join(
+  selenium_clean2, oxygen_OMZ_locations,
+  join_by(EVENT_LAT == LATITUDE, EVENT_LON == LONGITUDE, depth == DepSM))
+
+# only having data for where oxygen is available
+OMZ_data <- OMZ_data %>%
+  filter(!is.na(Sbeox0))
+
+# saving processed and combined dataset
+write.csv(OMZ_data, row.names = F, 
+          "./Data/Processed/OMZ_data_processed.csv")
+```
+
+# Data Analysis
+
+The data analysis to answer both research questions included multiple regression analyses, as the response variables being considered are all continuous, and two continuous explanatory variables were tested.
+
+## Question 1: Does selenium speciation (IV, VI, ORG) across the whole transect depend on depth and oxygen?
+
+Each speciation of selenium was analyzed in a multiple regression to test if depth and oxygen both significantly control concentrations of selenium. The fit of each model was examined with the 'plot' function, which shows graphs of the residuals vs. fitted, normal Q-Q, scale-location, and residuals vs. leverage. Additionally Akaike's Information Criterion (AIC) was used to see if the multiple regression models created were over-parameterized. To successfully run the AIC test, each multiple regression was run on datasets with complete concentration and oxygen data for the species of interest.
+
+For selenite, the multiple regression showed that depth and oxygen both significantly control concentration (Table 3) based on p-values \< 0.05, and these two variables account for 33% of the total variance in selenite concentration. The AIC from this model indicated that removing oxygen or depth would reduce model explanatory power, so the multiple regression was left as is.
+
+For selenate, the multiple regression showed that depth significantly controls concentration (Table 3) based on a p-value \< 0.05, but oxygen had a p-value of 0.204, meaning it did not significantly explain selenate concentrations. This model accounted for 15% of the total variance in selenate concentration. The AIC from this model indicated that removing oxygen would slightly improve model explanatory power.
+
+For selenide, the multiple regression showed that depth significantly controls concentration (Table 3) based on a p-value \< 0.05, but oxygen had a p-value of 0.6549, meaning it did not significantly explain selenide concentrations. This model accounted for only 6% of the total variance in selenide concentration. The AIC from this model indicated that removing oxygen would slightly improve model explanatory power.
+
+**Depth has a significant control on the concentrations of all dissolved selenium species in the locations analyzed here, while oxygen only significantly controlled selenite concentrations.**
+
+```{r, echo=FALSE, warning=FALSE}
+# making data analysis summary table
+Name <- c(
+  "selenite IV", "selenate VI", "organic selenide 2-")
+pvalue_depth <- c(
+  "<2e-16**", "3.83e-08**", "0.0153**")
+pvalue_oxygen <- c(
+  "0.0159**", "0.204", "0.6549")
+df <- c("183", "183", "99")
+F_value <- c("45.47", "16.7", "3.043")
+r_squ <- c("0.332", "0.154", "0.058")
+dataset <- data.frame(Name, pvalue_depth, pvalue_oxygen, df, F_value, r_squ)
+colnames(dataset) <- c("Se Species", "depth p-value", "oxygen p-value", "df", "F-statistic", "R-squared")
+  
+knitr::kable(dataset, caption = "Table 3: Multiple regression results for Se species analyzed with depth and dissolved oxygen (**indicates a p-value < 0.05)")
+```
+
+```{r, include=FALSE}
+# uploading dataset
+all_data <- read.csv(here("Data/Processed/se_oxygen_processed.csv"),
+                     stringsAsFactors = T)
+
+# removes NA's for selenite
+selenite_data <- all_data %>%
+  filter(!is.na(Se_IV_D_CONC_BOTTLE) & !is.na(meanOxygen))
+
+# multiple linear regression model of SELENITE compared to depth & oxygen
+selenite_lm <- lm(data = selenite_data, 
+                  Se_IV_D_CONC_BOTTLE ~ depth + meanOxygen)
+summary(selenite_lm)
+
+# checking fit of the model
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(selenite_lm)
+par(mfrow = c(1,1))
+
+# correlation plot
+selenite_cor <- all_data %>%
+  select(Se_IV_D_CONC_BOTTLE, depth, meanOxygen) %>%
+  na.omit()
+
+selenite_correlation <- cor(selenite_cor)
+corrplot(selenite_correlation, method = 'ellipse')
+
+#Choose a model by AIC in a Stepwise Algorithm
+step(selenite_lm)
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 5. A) Linear regression of selenite vs. depth and B) from an oceanography perspective. C) Selenite plotted with dissolved oxygen", fig.height=9, fig.align='center', fig.width=6}
+
+# plotting the linear regression SELENITE
+a <- ggplot(all_data, aes(depth, Se_IV_D_CONC_BOTTLE)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  labs(x = "Depth (m)", y = "SeIV Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenite (SeIV) vs. Depth")
+
+# visualizing from oceanography perspective
+b <- ggplot(all_data, aes(Se_IV_D_CONC_BOTTLE, depth)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  scale_y_reverse() +
+  labs(y = "Depth (m)", x = "SeIV Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenite (SeIV) vs. Depth")
+
+# oxygen vs selenite plot 
+t <- ggplot(all_data, aes(meanOxygen, Se_IV_D_CONC_BOTTLE)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  labs(x = "Dissolved oxygen (umol/kg)", y = "SeIV Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenite (SeIV) vs. Dissolved Oxygen")
+
+# grid the above plots for report
+plot_grid(a, b, t, labels = "AUTO", nrow = 3)
+
+```
+
+```{r, include=FALSE}
+# removing NA's for selenate
+selenate_data <- all_data %>%
+  filter(!is.na(Se_VI_D) & !is.na(meanOxygen))
+# multiple linear regression model of SELENATE compared to depth
+selenate_lm <- lm(data = selenate_data, 
+                  Se_VI_D ~ depth + meanOxygen)
+summary(selenate_lm)
+
+# checking fit of model
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(selenate_lm)
+par(mfrow = c(1,1))
+
+# correlation plot
+selenate_cor <- all_data %>%
+  select(Se_VI_D, depth, meanOxygen) %>%
+  na.omit()
+
+selenate_correlation <- cor(selenate_cor)
+corrplot(selenate_correlation, method = 'ellipse')
+
+#Choose a model by AIC in a Stepwise Algorithm
+step(selenate_lm)
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 6. A) Linear regression of selenate vs. depth and B) from an oceanography perspective. C) Selenate plotted with dissolved oxygen", fig.height=9, fig.align='center', fig.width=6}
+# plotting the linear regression
+x <- ggplot(all_data, aes(depth, Se_VI_D)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  labs(x = "Depth (m)", y = "SeVI Concentration (nm/L)",
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenate (SeVI) vs. Depth")
+
+# visualizing it as oceanographic data
+y <- ggplot(all_data, aes(Se_VI_D, depth)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  scale_y_reverse(limits = c(6000, 0)) +
+  labs(y = "Depth (m)", x = "SeVI Concentration (nm/L)",
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenate (SeVI) vs. Depth")
+
+# oxygen vs selenate plot 
+xx <- ggplot(all_data, aes(meanOxygen, Se_VI_D)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  labs(x = "Dissolved oxygen (umol/kg)", y = "SeVI Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenate (SeIV) vs. Dissolved Oxygen")
+
+# grid the above plots for report
+plot_grid(x, y, xx, labels = "AUTO", nrow = 3)
+
+```
+
+```{r, include=FALSE}
+#removing NA's for selenide
+selenide_data <- all_data %>%
+  filter(!is.na(Org_Se_II_CONC_BOTTLE) & !is.na(meanOxygen))
+
+# multiple linear regression model of organic selenide compared to depth & oxygen
+selenide_lm <- lm(data = selenide_data, 
+                  Org_Se_II_CONC_BOTTLE ~ depth + meanOxygen)
+summary(selenide_lm)
+
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(selenide_lm)
+par(mfrow = c(1,1))
+
+# correlation plot
+selenide_cor <- all_data %>%
+  select(Org_Se_II_CONC_BOTTLE, depth, meanOxygen) %>%
+  na.omit()
+
+selenide_correlation <- cor(selenide_cor)
+corrplot(selenide_correlation, method = 'ellipse')
+
+#Choose a model by AIC in a Stepwise Algorithm
+step(selenide_lm)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 7. A) Linear regression of organic selenide vs. depth and B) from an oceanography perspective. C) Organic selenide plotted with dissolved oxygen", fig.height=9, fig.align='center', fig.width=6}
+# plotting the linear regression
+z <- ggplot(all_data, aes(depth, Org_Se_II_CONC_BOTTLE)) + 
+  geom_point(alpha = 0.7, size = 2.5) + 
+  labs(x = "Depth (m)", y = "Se2- Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Organic Selenide (Se2-) vs. Depth")
+
+# visualizing as oceanographic data
+aa <- ggplot(all_data, aes(Org_Se_II_CONC_BOTTLE, depth)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  scale_y_reverse() + labs(y = "Depth (m)", x = "Se2- Concentration (nm/L)",
+                           subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Organic Selenide (Se2-) vs. Depth")
+
+# oxygen vs selenide plot 
+aaa <- ggplot(all_data, aes(meanOxygen, Org_Se_II_CONC_BOTTLE)) + 
+  geom_point(alpha = 0.7, size = 2.5) +
+  labs(x = "Dissolved oxygen (umol/kg)", y = "SeVI Concentration (nm/L)", 
+       subtitle = "All Locations from GP16 Cruise") + 
+  geom_smooth(method = lm, se = F) + 
+  ggtitle(label = "Selenide (Se2-) vs. Dissolved Oxygen")
+
+# grid above plots for report
+plot_grid(z, aa, aaa, labels = "AUTO", nrow = 3)
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 8. All selenium species plotted vs. depth", fig.align='center'}
+# pivot longer dataset to plot all Se species together with depth
+all_data_gathered <- pivot_longer(all_data, 
+                                  Se_IV_D_CONC_BOTTLE:Org_Se_II_CONC_BOTTLE, 
+               names_to = "species", values_to = "concentration")
+
+ggplot(all_data_gathered, aes(concentration, depth, colour = species)) + 
+  geom_point(alpha = 0.4, size = 2.5) + scale_y_reverse(limits = c(6000, 0)) + 
+  geom_smooth(method = lm, se = F, linewidth = 1.9) + 
+  labs(y = "Depth (m)", x = "Concentration (nm/L)", 
+       color = "Selenium species") + scale_color_viridis_d(
+         labels = c("Organic Selenide", "Selenite", "Selenate"))
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 9. All selenium species plotted vs. dissolved oxygen", fig.align='center'}
+# plotting all species together with oxygen
+ggplot(all_data_gathered, aes(meanOxygen, concentration, colour = species)) + 
+  geom_point(alpha = 0.4, size = 2.5) + 
+  geom_smooth(method = lm, se = F, linewidth = 1.9) + 
+  labs(x = "Dissolved Oxygen (umol/kg)", y = "Concentration (nm/L)", 
+       color = "Selenium species") + scale_color_viridis_d(
+         labels = c("Organic Selenide", "Selenite", "Selenate"))
+```
+
+## Question 2: In the oxygen minimum zone (OMZ) off the Peruvian Coast, do oxygen and depth both significantly control selenium speciation?
+
+Two locations shown in the map below were chosen that are within the OMZ off the Peruvian Coast (Fig. 4). Multiple regressions were again used to analyze the significance of depth and dissolved oxygen concentrations on Se species concentrations, but within an OMZ where more reducing waters are present, the trends may be different than in more oxic waters. Similarly to the whole transect analyses, the 'plot' function was used to test the model fitness, and AIC values were generated to test the model explanatory power.
+
+Selenite and selenate concentrations did not show any significance with depth or oxygen based on p-values from the multiple regressions (Table 4). AIC tests for both species indicated the model made for selenite was the best fit out of the parameters included, while for selenate, removing both oxygen and depth from the model would improve the explanatory power, which means these explanatory variables were not useful in determining selenate concentrations. Organic selenide did not show significance with depth, but the p-value for oxygen was near significance (p-value of 0.0535; Table 4). 
+
+```{r, echo=FALSE, warning=FALSE, fig.align='center'}
+#OMZ location analysis
+OMZ_only <- read.csv(here("Data/Processed/OMZ_data_processed.csv"),
+                     stringsAsFactors = T)
+
+# plot cruise track locations w/Se data & OMZ locations in a different color
+oxygen_OMZ_locations_map <- bind_rows(all_data, OMZ_only)
+  
+# convert data file into shapefile for spatial exploration
+all_data_sf <- all_data %>%
+  st_as_sf(coords = c('EVENT_LON','EVENT_LAT'), crs=4269)
+
+OMZ_only_sf <- OMZ_only %>%
+  st_as_sf(coords = c('EVENT_LON','EVENT_LAT'), crs=4269)
+
+# mapview plot
+mapview(all_data_sf) + mapview(OMZ_only_sf, color = 'red', col.regions = 'red')
+```
+
+```{r, echo=FALSE, warning=FALSE}
+# making data analysis summary table for OMZ 
+Name2 <- c(
+  "selenite IV", "selenate VI", "organic selenide 2-")
+pvalue_depth2 <- c(
+  "0.0782", "0.625", "0.3453")
+pvalue_oxygen2 <- c(
+  "0.1357", "0.625", "0.0535")
+df_2 <- c("29", "29", "25")
+F_value2 <- c("7.918", "0.1484", "2.133")
+r_squ2 <- c("0.3532", "0.0101", "0.1458")
+dataset2 <- data.frame(Name2, pvalue_depth2, pvalue_oxygen2, df_2, F_value2, r_squ2)
+colnames(dataset2) <- c("Se Species", "depth p-value", "oxygen p-value", "df", "F-statistic", "R-squared")
+  
+knitr::kable(dataset2, caption = "Table 4: Multiple regression results for Se species analyzed with depth and dissolved oxygen in only OMZ locations (**indicates a p-value < 0.05)")
+```
+
+
+```{r, include=FALSE}
+# multiple linear regression for only 2 OMZ locations - selenite
+OMZ_selenite_lm <- lm(data = OMZ_only, 
+                      Se_IV_D_CONC_BOTTLE ~ depth + Sbeox0)
+summary(OMZ_selenite_lm)
+
+# checking fit of model
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(OMZ_selenite_lm)
+par(mfrow = c(1,1))
+step(OMZ_selenite_lm)
+
+# multiple linear regression for only 2 OMZ locations - selenate
+OMZ_selenate_lm <- lm(data = OMZ_only, 
+                      Se_VI_D ~ depth + Sbeox0)
+summary(OMZ_selenate_lm)
+
+# checking fit of model
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(OMZ_selenate_lm)
+par(mfrow = c(1,1))
+step(OMZ_selenate_lm)
+
+# multiple linear regression for only 2 OMZ locations - selenide
+OMZ_selenide_lm <- lm(data = OMZ_only, 
+                      Org_Se_II_CONC_BOTTLE ~ depth + Sbeox0)
+summary(OMZ_selenide_lm)
+
+# checking fit of model
+par(mfrow = c(2,2), mar=c(4,4,4,4))
+plot(OMZ_selenide_lm)
+par(mfrow = c(1,1))
+step(OMZ_selenide_lm)
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center',fig.cap="Figure 10. Organic selenide concentrations plotted with depth and dissolved oxygen shown in the point colors"}
+
+# plotting selenide vs depth
+ggplot(OMZ_only, aes(Org_Se_II_CONC_BOTTLE, depth, colour = Sbeox0)) + 
+  geom_point(size = 3) + scale_y_reverse() + 
+  geom_smooth(method = lm, se = F, color = 'orangered') + 
+  labs(x = 'Concentration (nm/L)', y = 'Depth (m)', 
+       color = "Dissolved Oxygen (umol/kg)") + theme(legend.position = 'top')
+
+```
+
+
+# Summary and Conclusions
+
+The findings from this study reveal that, across the whole transect studied here, all selenium concentrations depend on depth. This is not surprising, as selenite and selenate behave as nutrient-type elements, meaning their concentration relies heavily on biological uptake in the photic zone. At depth, this organic matter is regenerated, and selenite and selenate concentrations typically increase, which was observed here. The increase of organic selenide with depth, while a weaker correlation, was still significant. This was surprising, as it is typically thought that organic selenide is highest in concentration near the surface where productivity is occurring, and then this decreases with depth as respiration dominates the biological pump more. This was not observed in this study. The lack of significance for oxygen on selenate and organic selenide concentrations was also very surprising, as these species are the two endmembers of the redox gradient for Se, meaning it would be expected that oxygen controls their concentration the most.
+
+The same analyses for two locations within the OMZ showed no significance for depth or oxygen on any of the selenium concentrations. However the p-value for oxygen and organic selenide concentration was near significance, and this is to be expected as  low oxygen in the OMZ would cause an increase in organic selenide concentrations. However, this relationship was instead a positive correlation, with organic selenide concentrations increasing with dissolved oxygen concentrations, which is not expected from a redox standpoint.
+
+One limitation from this study was the lack of organic selenide concentration data. 111 rows of the processed data frame had NA values for organic selenide of the 235 rows, so more data points could increase robustness of this analysis for future work. Also, looking into similar data from locations in other oceanic basins would help constrain if these relationships are widespread or specific to certain regions of the ocean.
+
+# References
+
+Moffett, J. et al. 2014. U.S. GEOTRACES EPZT Cruise Report. <https://geotracesold.sedoo.fr/images/stories/geotraces/Cruises/cruises/TN303_EPZT_Cruise_Report.pdf>
+
+Moffett, J.W. and German, C.R., 2018. The US GEOTRACES eastern tropical Pacific transect (GP16). Marine Chemistry, 201, pp.1-5.
