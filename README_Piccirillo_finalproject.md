@@ -4,7 +4,7 @@
 
 Repository for ENV872 final project by Laura Piccirillo, focused on selenium concentrations in the Eastern Tropical Pacific Ocean. The seawater samples included in this analysis were collected with Go-FLO trace-metal clean bottles in 2013 on the U.S. GEOTRACES East Pacific Zonal Transect (GP16) cruise from Peru to Tahiti. 
 
-Selenium (Se) is a trace element and exists in various oxidation states throughout the water column (selenate, selenite, elemental Se, selenide). The marine biogeochemical cycling of Se is not well constrained, and these concentration measurements of the various forms of Se are helpful in constraining its cycling. Here, concentrations of selenite, selenate, and organic selenide were compared to depth and dissolved oxygen concentrations using multiple regressions across this cruise transect.
+Selenium (Se) is a trace element and exists in various oxidation states throughout the water column (selenate, selenite, elemental Se, selenide). The marine biogeochemical cycling of Se is not well constrained, and these concentration measurements of the various forms of Se are helpful to better understand its cycling. Here, concentrations of selenite, selenate, and organic selenide were compared to depth and dissolved oxygen concentrations using multiple regression analyses across this cruise transect.
 
 This project was carried out in December 2025.
 
@@ -47,10 +47,10 @@ Data folder (Processed): CSV files for the explored and processed datasets. Expl
 Output folder: Contains the final Rmarkdown used for the project report, rendered to HTML.
 
 ## Metadata
-Additional information on parameters can be found on dataset webpages attached above.
-Data (Raw):
-As_Se_IO_BOTTLE.csv
-Column names with descriptions, class, units: 
+Additional information on parameters can be found on dataset webpages linked above.
+#Data (Raw):
+###As_Se_IO_BOTTLE.csv
+####Column names with descriptions, class, units: 
 CASTNO: GEOTRACES cast number for that station.
 STNNBR: Station number.	
 GEOTRC_EVENTNO: GEOTRACES event number.
@@ -87,6 +87,56 @@ BTL_LON: Longitude of bottle firing; east is positive. decimal degrees
 SECT_ID: Transect identifier for GEOTRACES Eastern Pacific Zonal Transect (EPZT)
 Cruise identifier
 
-GT-C_SBE_CTD_Proc_v30Oct2014.csv
+###GT-C_SBE_CTD_Proc_v30Oct2014.csv
+DATASET_ID: CTD Dataset Identifier
+EXPOCODE: expedition code assigned by the CCHDO: NODCShipCodeYearMonthDay
+SECT_ID: cruise section identification number
+GEOTRC_EVENTNO: GEOTRACES Event Number (dimensionless	event)
+DATE: Station Date (GMT) format YYYYMMDD
+TIME: Station Time (GMT) HHMM	
+LATITUDE: Station Latitude (South is negative), decimal degrees	
+LONGITUDE: Station Longitude (West is negative), decimal degrees	
+PrDM: Pressure Digiquartz, dbar
+T090C: Temperature ITS-90, degrees celsius
+T190C: Temperature 2 ITS-90, degrees celsius	
+C0S: Conductivity, S/m	
+C1S: Conductivity 2, S/m	
+Sbeox0V: Oxygen raw SBE 43, volts	
+Xmiss: Beam Transmission Chelsea/Seatech, percentage	
+FlSP: Fluorescence Seapoint, nd
+SeaTurbMtr: Turbidity Seapoint, FTU	
+DepSM: Depth salt water  lat = -12.0057, meters	
+Sal00: Salinity Practical, PSU	
+Sal11: Salinity 2 Practical, PSU	
+Density00: Density (density), kg/m^3	
+Density11: Density 2 (density), kg/m^3	
+Sigma_e00: Density sigma-theta, kg/m^3	
+Sigma_e11: Density 2 sigma-theta, kg/m^3	
+Sbeox0: Oxygen SBE 43  WS = 2, umol/kg
+Flag: Flag
+ISO_DATE_TIME: Date/Time (ISO formatted), YYYY-MM-DDTHH:MM:SS[.xx]Z
 
+#Data (Processed):
+###As_Se_IO_BOTTLE_Explored.csv: same parameters as As_Se_IO_BOTTLE.csv listed above.
+###GT-C_SBE_CTD_Proc_v30Oct2014_Explored.csv: same parameters as GT-C_SBE_CTD_Proc_v30Oct2014.csv listed above.
 
+###se_oxygen_processed.csv
+EVENT_LAT: Station Latitude (South is negative), decimal degrees	
+EVENT_LON: Station Longitude (West is negative), decimal degrees
+PI_DATE: YYYYMMDD
+depth: water depth, meters
+Se_IV_D_CONC_BOTTLE: selenite concentration, nmol/L
+Se_VI_D: selenate concentration, nmol/L
+Org_Se_II_CONC_BOTTLE: organic selenide concentration, nmol/L
+meanOxygen: oxygen averaged for matching latitude/longitude/depth points, umol/kg
+
+###OMZ_data_processed.csv
+EVENT_LAT: Station Latitude (South is negative), decimal degrees
+EVENT_LON: Station Longitude (West is negative), decimal degrees
+PI_DATE: YYYYMMDD
+depth: water depth, meters
+Se_IV_D_CONC_BOTTLE: selenite concentration, nmol/L
+Se_VI_D: selenate concentration, nmol/L
+Org_Se_II_CONC_BOTTLE: organic selenide concentration, nmol/L
+DATE: YYYYMMDD
+Sbeox0: Processed oxygen onboard, umol/kg
