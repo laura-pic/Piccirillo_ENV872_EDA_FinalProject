@@ -278,7 +278,7 @@ ggplot(OMZ_only, aes(Org_Se_II_CONC_BOTTLE, depth, colour = Sbeox0)) +
 
 ```{r}
 # plot cruise track locations w/Se data & OMZ locations in a different color
-oxygen_OMZ_locations_map <- rbind(all_data, OMZ_only)
+oxygen_OMZ_locations_map <- bind_rows(all_data, OMZ_only)
   
 # convert data file into shapefile for spatial exploration
 all_data_sf <- all_data %>%
