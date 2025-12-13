@@ -265,21 +265,14 @@ par(mfrow = c(2,2), mar=c(4,4,4,4))
 plot(OMZ_selenide_lm)
 par(mfrow = c(1,1))
 
-# plotting oxygen for grid
-bb <- ggplot(OMZ_only, aes(Sbeox0, depth)) + geom_point(size = 2.5) + 
-  scale_y_reverse() +
-  labs(x = 'Dissolved Oxygen (umol/kg)', y = 'Depth (m)')
 
-# plotting selenide vs depth
-cc <- ggplot(OMZ_only, aes(Org_Se_II_CONC_BOTTLE, depth)) + geom_point(size = 2.5) + scale_y_reverse() + geom_smooth(method = lm, se = F) + 
-  labs(x = 'Concentration (nm/L)', y = 'Depth (m)')
+# plotting selenide vs depth and oxygen
+ggplot(OMZ_only, aes(Org_Se_II_CONC_BOTTLE, depth, colour = Sbeox0)) + 
+  geom_point(size = 3) + scale_y_reverse() + 
+  geom_smooth(method = lm, se = F, color = 'orangered') + 
+  labs(x = 'Concentration (nm/L)', y = 'Depth (m)', 
+       color = "Dissolved Oxygen (umol/kg)") + theme(legend.position = 'top')
 
-plot_grid(bb, cc, labels = "AUTO")
-
-# plotting selenide vs oxygen
-ggplot(OMZ_only, aes(Sbeox0, Org_Se_II_CONC_BOTTLE)) + geom_point(size = 2.5) + 
-  geom_smooth(method = lm, se = F) + 
-  labs(x = "Dissolved Oxygen (umol/kg)", y = "Concentration (nm/L)")
 ```
 
 
